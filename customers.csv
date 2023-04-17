@@ -1,0 +1,7 @@
+username,password,conversation,blocklist,invislist
+Tim,passing,Tim&&target.csv;Tim&&walmart.csv,Finni;Sherry,Bob
+SteveJobs,apple,SteveJobs&&target.csv,,Bob
+John,banana,John&&amazon.csv;John&&walmart.csv,Finni,Sherry
+Lenin,le456get,Lenin&&Finni.csv,Sherry,Bob
+Mary,mmmaary23,Mary&&amazon.csv,Finni,Bob
+Shinny,shshsh77,Shinny&&McDonald's.csv,Greene,Finni
