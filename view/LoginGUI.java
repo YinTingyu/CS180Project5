@@ -173,6 +173,8 @@ public class LoginGUI implements ActionListener {
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
+                userMap.putAll(customerMap);
+                userMap.putAll(sellerMap);
 
                 String username = userText.getText();
                 String password = passwordText.getText();
