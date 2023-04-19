@@ -12,7 +12,14 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * A login GUI
+ * 
+ * <p>Purdue University -- CS18000 -- Spring 2023 -- project 5
+ *
+ * @author Tingyu Yin
+ * @version April 18, 2023
+ */
 public class LoginGUI implements ActionListener {
 
     private static final String SIGNUP_TITLE = "Create Account";
@@ -32,6 +39,15 @@ public class LoginGUI implements ActionListener {
     static JLabel success;
 
     private final Map<String, User> userMap = new HashMap<>();
+
+    public void openCustomerMenu(Customer customer) {
+        CustomerMenu customerMenu = new CustomerMenu();
+        try {
+            customerMenu.showCustomerMenu(customer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void run() {
 
@@ -112,8 +128,17 @@ public class LoginGUI implements ActionListener {
 
         User user = userMap.get(username);
 
-        if (userMap.get(username) != null && user.authenticate(password)) {
-            success.setText(LOGIN_SUCCEED);
+        if (user != null && user.authenticate(password)) {
+
+            if (user instanceof Customer) {
+                success.setText(LOGIN_SUCCEED);
+                openCustomerMenu((Customer) user);
+            } else if (user instanceof Seller) {
+                success.setText(LOGIN_SUCCEED);
+                // SellerMenu to be implemented
+                // openSellerMenu((Seller) user);
+            }
+
         } else if (actionEvent.equals("Register")) {
             createAccountWindow();
         } else {
@@ -199,5 +224,10 @@ public class LoginGUI implements ActionListener {
         signUpPanel.add(createButton);
 
         signUpFrame.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        LoginGUI login = new LoginGUI();
+        login.run();
     }
 }
