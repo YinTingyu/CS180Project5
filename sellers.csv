@@ -1,6 +1,6 @@
 username,password,conversation,blocklist,invislist,stores
-Greene,fiddly34,Greene&&Tim.csv;Greene&&John.csv,Mary,Shinny,walmart
-Jimmy,password12,Jimmy&&Tim.csv;Jimmy&&SteveJobs.csv;Jimmy&&John.csv,Shinny,Mary,target
-Finni,finniHere,Finni&&Lenin.csv,Tim,SteveJobs,starbucks;subway
-Sherry,ginSherry,Sherry&&John.csv;Sherry&&Mary.csv,Tim,John,amazon
+Greene,fiddly34,Greene&&Tim.csv;Greene&&John.csv,Mary,Shinny,Walmart
+Jimmy,password12,Jimmy&&Tim.csv;Jimmy&&SteveJobs.csv;Jimmy&&John.csv,Shinny,Mary,Target
+Finni,finniHere,Finni&&Lenin.csv,Tim,SteveJobs,Starbucks;Subway
+Sherry,ginSherry,Sherry&&John.csv;Sherry&&Mary.csv,Tim,John,Amazon
 Bob,bob101Boo,Bob&&Shinny.csv,,,McDonald's
