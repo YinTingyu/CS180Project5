@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 /**
  * A login GUI
- * 
+ *
  * <p>Purdue University -- CS18000 -- Spring 2023 -- project 5
  *
  * @author Tingyu Yin

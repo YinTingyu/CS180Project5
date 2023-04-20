@@ -1,5 +1,6 @@
 package view;
 
+import core.Customer;
 import core.Store;
 import utils.CSVReader;
 
@@ -12,15 +13,34 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * A view all the stores GUI
+ *
+ * <p>Purdue University -- CS18000 -- Spring 2023 -- project 5
+ *
+ * @author Tingyu Yin
+ * @version April 18, 2023
+ */
 public class ViewStoresWindow {
 
     private static Map<String, Store> storeMap = new HashMap<>();
     private CustomerMenu customerMenu;
     private Runnable onGoBack;
+    private Customer customer;
 
-    public ViewStoresWindow(Runnable onGoBack) {
+
+    public ViewStoresWindow(Runnable onGoBack, Customer customer) {
         this.onGoBack = onGoBack;
+        this.customer = customer;
+    }
+
+    public void openSMGWindow(CustomerMenu customerMenu, Store store, Customer customer) {
+        CustomerSMGWindow sendWindow = new CustomerSMGWindow(customerMenu, store, customer);
+        try {
+            sendWindow.run();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void run() throws IOException {
@@ -46,15 +66,41 @@ public class ViewStoresWindow {
 
             labelPanel.add(new JLabel("Store Name: " + storeName));
             labelPanel.add(new JLabel(" | "));
-            labelPanel.add(new JLabel("Seller: " + storeSeller));
+
+            // have to tell whether the seller has been invisible to the customer
+            List<String> sellerInvisList = reader.getInvisList(store.getSeller());
+            boolean invisible = sellerInvisList.contains(customer.getUsername());
+            if (!invisible) {
+                labelPanel.add(new JLabel("Seller: " + storeSeller));
+            }
+
             JButton sendMessageButton = new JButton("Send Message");
             labelPanel.add(sendMessageButton);
+            sendMessageButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+
+                    List<String> block = null;
+                    try {
+                        block = reader.getBlockList(store.getSeller());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (block.contains(customer.getUsername())) {
+                        JOptionPane.showMessageDialog(null, "You have been blocked!",
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        openSMGWindow(customerMenu, store, customer);
+                    }
+
+                }
+            });
 
             storePanel.add(labelPanel, BorderLayout.NORTH);
 
             int productSize = store.getProduct().size();
 
-            String[] columns = {"Product", "Amount Available", "Price"};
+            String[] columns = {"Product", "Amount Available", "Price($)"};
             Object[][] productData = updateProductData(store);
 
             // set the value of dateset then initialize model. order is important !
@@ -123,7 +169,7 @@ public class ViewStoresWindow {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 frame.dispose();
-                onGoBack.run(); // Call the Runnable's run method
+                onGoBack.run(); // Call the run method of Runnable
             }
         });
 

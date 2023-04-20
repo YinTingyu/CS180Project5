@@ -1,4 +1,4 @@
-﻿timestamp,username,message,isDeleted
-4:03:59,Tim,hello there,Y
-4:05:29,Greene,Hi,N
-6:48:01,Tim,I'd like to order some towels,N
+﻿timestamp,username,message
+2023-01-01 4:03:59,Tim,hello there
+2023-01-01 4:05:29,Greene,Hi
+2023-01-01 6:48:01,Tim,I'd like to order some towels
