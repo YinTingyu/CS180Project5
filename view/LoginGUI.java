@@ -3,15 +3,21 @@ package view;
 import core.Customer;
 import core.Seller;
 import core.User;
+import io.Client;
+import io.ClientHandler;
 import utils.CSVReader;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.*;
+
 /**
  * A login GUI
  *
@@ -35,13 +41,15 @@ public class LoginGUI implements ActionListener {
     private static JLabel userLabel;
     static JTextField userText;
     private static JLabel passwordLabel;
-    static JTextField passwordText;
+    static JPasswordField passwordText;
     static JLabel success;
+    String serverName = "localhost";
+    int port = 9090;
 
     private final Map<String, User> userMap = new HashMap<>();
 
     public void openCustomerMenu(Customer customer) {
-        CustomerMenu customerMenu = new CustomerMenu();
+        CustomerMenu customerMenu = new CustomerMenu(customer);
         try {
             customerMenu.showCustomerMenu(customer);
         } catch (IOException e) {
@@ -49,11 +57,20 @@ public class LoginGUI implements ActionListener {
         }
     }
 
+    public void openSellerMenu(Seller seller) {
+        SellerMenu sellerMenu = new SellerMenu(seller);
+        try {
+            sellerMenu.showSellerMenu(seller);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void run() {
 
         JFrame frame = new JFrame();
         frame.setSize(500, 500);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
         CardLayout cardLayout = new CardLayout();
@@ -77,7 +94,7 @@ public class LoginGUI implements ActionListener {
         passwordLabel.setBounds(10, 50, 80, 25);
         loginPanel.add(passwordLabel);
 
-        passwordText = new JTextField();
+        passwordText = new JPasswordField();
         passwordText.setBounds(100, 50, 165, 25);
         loginPanel.add(passwordText);
 
@@ -109,7 +126,7 @@ public class LoginGUI implements ActionListener {
         CSVReader csvReader = new CSVReader();
         Map<String, Customer> customerMap;
         try {
-            customerMap = csvReader.readSCustomers();
+            customerMap = csvReader.readCustomers();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -119,24 +136,34 @@ public class LoginGUI implements ActionListener {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        userMap.clear();
         // put all the customers and sellers into a user map
         userMap.putAll(customerMap);
         userMap.putAll(sellerMap);
 
         String username = userText.getText();
-        String password = passwordText.getText();
+        char[] passwordCharArray = passwordText.getPassword();
+        String password = new String(passwordCharArray);
+        Arrays.fill(passwordCharArray, '\0'); // '\0' is the null character.
 
         User user = userMap.get(username);
 
         if (user != null && user.authenticate(password)) {
 
+            SwingUtilities.getWindowAncestor(userText).dispose();
+
             if (user instanceof Customer) {
                 success.setText(LOGIN_SUCCEED);
                 openCustomerMenu((Customer) user);
+
+                
+
             } else if (user instanceof Seller) {
                 success.setText(LOGIN_SUCCEED);
-                // SellerMenu to be implemented
-                // openSellerMenu((Seller) user);
+                openSellerMenu((Seller) user);
+
+                
             }
 
         } else if (actionEvent.equals("Register")) {
@@ -148,6 +175,7 @@ public class LoginGUI implements ActionListener {
     }
 
     private void createAccountWindow() {
+
         JFrame signUpFrame = new JFrame(SIGNUP_TITLE);
         signUpFrame.setSize(500, 500);
         signUpFrame.setLocationRelativeTo(null);
@@ -168,7 +196,7 @@ public class LoginGUI implements ActionListener {
         passwordLabel.setBounds(10, 50, 80, 25);
         signUpPanel.add(passwordLabel);
 
-        passwordText = new JTextField();
+        passwordText = new JPasswordField();
         passwordText.setBounds(100, 50, 165, 25);
         signUpPanel.add(passwordText);
 
@@ -185,10 +213,11 @@ public class LoginGUI implements ActionListener {
         createButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
                 CSVReader csvReader = new CSVReader();
                 Map<String, Customer> customerMap;
                 try {
-                    customerMap = csvReader.readSCustomers();
+                    customerMap = csvReader.readCustomers();
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -209,15 +238,55 @@ public class LoginGUI implements ActionListener {
                 } else {
                     String role = (String) roleComboBox.getSelectedItem();
                     User newUser;
+
                     if (role.equals("Customer")) {
+
+                        successLabel.setText(REGISTER_SUCCESS_MSG);
                         newUser = new Customer(username, password);
                         customerMap.put(username, (Customer) newUser);
+                        userMap.put(username, newUser);
+
+                        // write csv file
+                        String file = "./src/customers.csv";
+                        try {
+
+                            BufferedWriter bfw = new BufferedWriter(new FileWriter(file, true));
+                            String newCustomer = username + "," + password + ",...,...,...";
+                            // ... to avoid error ArrayOutOfBounds for new user without blocklist/invisible list
+                            bfw.write(newCustomer);
+
+                            bfw.close();
+
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+
+                        
+
                     } else {
+
+                        successLabel.setText(REGISTER_SUCCESS_MSG);
                         newUser = new Seller(username, password);
                         sellerMap.put(username, (Seller) newUser);
+                        userMap.put(username, newUser);
+
+                        // write csv file
+                        String file = "./src/sellers.csv";
+                        try {
+
+                            BufferedWriter bfw = new BufferedWriter(new FileWriter(file, true));
+                            String newSeller = username + "," + password + ",...,...,...,...";
+                            bfw.write(newSeller);
+
+                            bfw.close();
+
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+
+                        
                     }
-                    userMap.put(username, newUser);
-                    successLabel.setText(REGISTER_SUCCESS_MSG);
+
                 }
             }
         });
@@ -230,4 +299,5 @@ public class LoginGUI implements ActionListener {
         LoginGUI login = new LoginGUI();
         login.run();
     }
+
 }
