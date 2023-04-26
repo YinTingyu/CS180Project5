@@ -1,6 +1,7 @@
 package view;
 
 import core.Customer;
+import core.Seller;
 import core.Store;
 import utils.CSVReader;
 
@@ -10,6 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +31,14 @@ public class ViewStoresWindow {
     private Customer customer;
 
 
-    public ViewStoresWindow(Runnable onGoBack, Customer customer) {
+    public ViewStoresWindow(Runnable onGoBack, Customer customer, CustomerMenu customerMenu) {
         this.onGoBack = onGoBack;
         this.customer = customer;
+        this.customerMenu = customerMenu;
     }
 
-    public void openSMGWindow(CustomerMenu customerMenu, Store store, Customer customer) {
+
+    public void openCustomerSMGWindow(CustomerMenu customerMenu, Store store, Customer customer) {
         CustomerSMGWindow sendWindow = new CustomerSMGWindow(customerMenu, store, customer);
         try {
             sendWindow.run();
@@ -80,19 +84,19 @@ public class ViewStoresWindow {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
 
-                    List<String> block = null;
+                    Seller storeSeller = store.getSeller();
+                    List<String> sellerBlockList = new ArrayList<>();
                     try {
-                        block = reader.getBlockList(store.getSeller());
+                        sellerBlockList = reader.getBlockList(storeSeller);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    if (block.contains(customer.getUsername())) {
+                    if (sellerBlockList.contains(customer.getUsername())) {
                         JOptionPane.showMessageDialog(null, "You have been blocked!",
                                 "Error", JOptionPane.ERROR_MESSAGE);
                     } else {
-                        openSMGWindow(customerMenu, store, customer);
+                        openCustomerSMGWindow(customerMenu, store, customer);
                     }
-
                 }
             });
 

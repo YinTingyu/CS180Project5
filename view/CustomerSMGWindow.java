@@ -3,11 +3,15 @@ package view;
 import core.Customer;
 import core.Store;
 import utils.CSVReader;
+import utils.CSVWriter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -40,10 +44,13 @@ public class CustomerSMGWindow {
 
         //// Clear the existing conversation panel
         conversationPanel.removeAll();
+        CSVReader reader = new CSVReader();
+        CSVWriter writer = new CSVWriter(customer);
+        String filename = reader.getFilenames(customer.getUsername(), store.getSeller().getUsername());
 
         for (String message : messages) {
 
-            String[] msgInfo = message.split("  ");
+            String[] msgInfo = message.split("& . _ . &");
 
             // use labels to hold sender's name and timestamp
             JLabel senderLabel = new JLabel(msgInfo[1]);
@@ -84,7 +91,6 @@ public class CustomerSMGWindow {
                     editButton.setVisible(false);
                     saveButton.setVisible(true); // show save button
 
-                    // (write) update csv file to be implemented
                 }
             });
 
@@ -104,6 +110,13 @@ public class CustomerSMGWindow {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
+
+                    // (write) update csv file
+                    try {
+                        writer.updateConversationFile(filename, messages);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
 
@@ -119,7 +132,12 @@ public class CustomerSMGWindow {
                         throw new RuntimeException(e);
                     }
 
-                    // (write) update csv file to be implemented
+                    // (write) update csv file
+                    try {
+                        writer.updateConversationFile(filename, messages);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
         }
@@ -132,8 +150,18 @@ public class CustomerSMGWindow {
 
     public void run() throws IOException {
         CSVReader reader = new CSVReader();
-        // add "./src/" just for run it in my computer, you can change the path
-        String filename = "./src/" + customer.getUsername() + "&&" + store.getStoreName() + ".csv";
+        CSVWriter writer = new CSVWriter(customer);
+
+        String filename = reader.getFilenames(customer.getUsername(), store.getSeller().getUsername());
+        File file = new File(filename);
+        if (!file.exists()) {
+            file.createNewFile();
+            BufferedWriter bwr = new BufferedWriter(new FileWriter(file));
+            String formatHeader = String.format("%s,%s,%s\n", "timestamp",
+                    "username", "message");
+            bwr.write(formatHeader);
+            bwr.close();
+        }
         messages = reader.readMessages(filename);
 
 
@@ -184,9 +212,14 @@ public class CustomerSMGWindow {
                 String timestampStr = dateFormat.format(timestamp);
 
                 // add new message to messages list
-                String format = "%s  %s  %s";
+                String format = "%s& . _ . &%s& . _ . &%s";
                 String newMSGStr = String.format(format, timestampStr, customer.getUsername(), msg);
                 messages.add(newMSGStr);
+                try {
+                    writer.writeMessage(filename, newMSGStr);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 try {
                     inputMessage.setText(""); // once send message, empty send message text field
                     updateConversation(messages);
