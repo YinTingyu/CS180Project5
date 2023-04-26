@@ -161,5 +161,18 @@ public class CSVWriter {
                 break;
             }
         }
+
+        // rewrite everything include header
+        if (user.getRole().equals("Customer")) {
+
+            String header = String.format("%s,%s,%s,%s,%s",
+                    "username", "password", "conversation", "blocklist", "invislist");
+            bfw.write(header);
+            for (String line : allLines) {
+                bfw.write(line);
+                bfw.newLine();
+            }
+        }
+        bfw.close();
     }
 }
