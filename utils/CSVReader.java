@@ -17,7 +17,7 @@ public class CSVReader {
         return csvFilename;                                         //  you can change the path
     }
 
-    public Map<String, Customer> readSCustomers() throws IOException {
+    public Map<String, Customer> readCustomers() throws IOException {
         String customerCSV = "./src/customers.csv";
         BufferedReader bfr = new BufferedReader(new FileReader(customerCSV));
         String line;
@@ -26,10 +26,6 @@ public class CSVReader {
             String[] attributes = line.split(",");
             String username = attributes[0];
             String password = attributes[1];
-
-            // need another method to get customer's conversation filenames
-            String[] conversationFilenames = attributes[2].split(";"); // e.g [Tim&&target.csv]
-
             Customer customer = new Customer(username, password);
             customerMap.put(username, customer);
         }
@@ -43,7 +39,8 @@ public class CSVReader {
         BufferedReader bfr = new BufferedReader(new FileReader(filename));
         List<String> allLines = new ArrayList<>();
         String line;
-        bfr.readLine(); // escape the header
+
+        bfr.readLine(); // escape the header !
         while ((line = bfr.readLine()) != null) {
             allLines.add(line);
         }
@@ -57,46 +54,33 @@ public class CSVReader {
         BufferedReader bfr = new BufferedReader(new FileReader(storeFilename));
         String line;
 
-        // escape the header
+        bfr.readLine(); // escape the header
         while ((line = bfr.readLine()) != null) {
             String[] attributes = line.split(",");
             String storeName = attributes[0];
             String seller = attributes[2];
-            readSellers();
 
             List<String> productList = new ArrayList<>();
             List<Double> priceList = new ArrayList<>();
             List<Integer> amountList = new ArrayList<>();
 
-            if (attributes[1].length() == 1) { // if only have one product
+            String[] allProducts = attributes[1].split(";");
 
-                String[] productInfo = attributes[1].split("-"); // if this store only have one product
-                String product = productInfo[0];
-                Double price = Double.parseDouble(productInfo[1]);
-                Integer amount = Integer.parseInt(productInfo[2]);
+            for (int i = 0; i < allProducts.length; i++) {
+                String[] productsInfo = allProducts[i].split("-");
+
+                String product = productsInfo[0];
+                int amount = Integer.parseInt(productsInfo[1]);
+                double price = Double.parseDouble(productsInfo[2]);
 
                 productList.add(product);
-                priceList.add(price);
                 amountList.add(amount);
-
-            } else { // if it has multiple products
-
-                String[] allProducts = attributes[1].split(";");
-
-                for (int i = 0; i < allProducts.length; i++) {
-                    String[] productsInfo = allProducts[i].split("-");
-                    for (int j = 0; j < productsInfo.length; j++) {
-                        productList.add(productsInfo[0]);
-                        priceList.add(Double.parseDouble(productsInfo[1]));
-                        amountList.add(Integer.parseInt(productsInfo[2]));
-                    }
-                }
+                priceList.add(price);
             }
 
-            readSellers(); // I am not sure after I call this method inside this class
-                          // whether all the seller will be load in map
-            Store store = new Store(storeName, productList, priceList,
-                    amountList, sellerMap.get(seller));
+            readSellers();
+            Store store = new Store(storeName, productList, amountList,
+                    priceList, sellerMap.get(seller));
             storeMap.put(storeName, store);
 
         }
@@ -110,21 +94,12 @@ public class CSVReader {
         String sellerFilename = "./src/sellers.csv"; // this is my path, you can change
         BufferedReader bfr = new BufferedReader(new FileReader(sellerFilename));
         String line;
-        String[] participants;
 
         bfr.readLine(); // escape the header
         while ((line = bfr.readLine()) != null) {
             String[] attributes = line.split(",");
             String username = attributes[0];
             String password = attributes[1];
-            String[] conversationFilenames = attributes[2].split(";"); //e.g Jimmy&&Tim.csv
-
-            String[] store = attributes[3].split(";"); // need another method to get stores of the seller
-
-            for (String filenames : conversationFilenames) {
-                participants = filenames.split("&&");
-                String recipient = participants[1];
-            }
 
             Seller seller = new Seller(username, password);
             sellerMap.put(username, seller);
@@ -138,9 +113,10 @@ public class CSVReader {
 
     // all the user and store should be load into application after the three methods above
 
-    public List<String> getBlockList() throws IOException { // this method is to find a specific user's block list
-        Login login = new Login();  // I am trying to get the user who are using the
-        User user = login.user;    // application from login interface, not sure about this
+
+    // this method is to find a specific user's block list
+    public List<String> getBlockList(User user) throws IOException {
+
         List<String> blockedList = new ArrayList<>();
         String line;
 
@@ -154,10 +130,16 @@ public class CSVReader {
                 String username = attr[0];
 
                 if (user.getUsername().equals(username)) { // find a specific user's block list
-                    String[] block = attr[3].split(";");
-                    for (int i = 0; i < block.length; i++) {
-                        blockedList.add(block[i]);
+
+                    if (!attr[4].equals("...")) {
+                        String[] block = attr[3].split(";");
+                        for (int i = 0; i < block.length; i++) {
+                            blockedList.add(block[i]);
+                        }
+                    } else {
+                        blockedList.clear();
                     }
+
                 }
             }
 
@@ -171,9 +153,14 @@ public class CSVReader {
                 String username = attr[0];
 
                 if (user.getUsername().equals(username)) { // find a specific user's block list
-                    String[] block = attr[3].split(";");
-                    for (int i = 0; i < block.length; i++) {
-                        blockedList.add(block[i]);
+
+                    if (!attr[4].equals("...")) {
+                        String[] block = attr[3].split(";");
+                        for (int i = 0; i < block.length; i++) {
+                            blockedList.add(block[i]);
+                        }
+                    } else {
+                        blockedList.clear();
                     }
                 }
             }
@@ -182,9 +169,9 @@ public class CSVReader {
         return blockedList;
     }
 
-    public List<String> getInvisList() throws IOException { // to find a specific user's invisible list
-        Login login = new Login();
-        User user = login.user;
+    // to find a specific user's invisible list
+    public List<String> getInvisList(User user) throws IOException {
+
         List<String> invisList = new ArrayList<>();
         String line;
 
@@ -198,9 +185,14 @@ public class CSVReader {
                 String username = attr[0];
 
                 if (user.getUsername().equals(username)) {
-                    String[] invisible = attr[4].split(";");
-                    for (int i = 0; i < invisible.length; i++) {
-                        invisList.add(invisible[i]);
+
+                    if (!attr[4].equals("...")) {
+                        String[] invisible = attr[4].split(";");
+                        for (int i = 0; i < invisible.length; i++) {
+                            invisList.add(invisible[i]);
+                        }
+                    } else {
+                        invisList.clear();
                     }
                 }
             }
@@ -215,9 +207,13 @@ public class CSVReader {
                 String username = attr[0];
 
                 if (user.getUsername().equals(username)) { // find a specific user's block list
-                    String[] invisible = attr[3].split(";");
-                    for (int i = 0; i < invisible.length; i++) {
-                        invisList.add(invisible[i]);
+                    if (!attr[4].equals("...")) {
+                        String[] invisible = attr[4].split(";");
+                        for (int i = 0; i < invisible.length; i++) {
+                            invisList.add(invisible[i]);
+                        }
+                    } else {
+                        invisList.clear();
                     }
                 }
             }
@@ -226,6 +222,36 @@ public class CSVReader {
         return invisList;
     }
 
+
+    public List<Store> getSellerStores(Seller seller) throws IOException {
+        readStores();
+        List<Store> sellerStore = new ArrayList<>();
+        Store storeToFind;
+        String line;
+        BufferedReader bfr = new BufferedReader(new FileReader("./src/sellers.csv"));
+        bfr.readLine(); // escape the header
+        while ((line = bfr.readLine()) != null) {
+            String[] attr = line.split(",");
+            String sellerName = attr[0];
+            if (sellerName.equals(seller.getUsername())) { // find the seller
+
+                if (!attr[5].equals("...")) {
+                    String[] storesName = attr[5].split(";"); // get stores of the seller
+                    for (String s : storesName) {
+                        storeToFind = storeMap.get(s);
+                        sellerStore.add(storeToFind);
+                    }
+                } else {
+                    sellerStore.clear();
+                }
+
+            }
+        }
+
+        bfr.close();
+
+        return sellerStore;
+    }
 
 
     public List<String> readMessages(String filename) throws IOException {
@@ -239,9 +265,11 @@ public class CSVReader {
             String timestampStr = attr[0];
             String username = attr[1];
             String message = attr[2].replaceAll("_", ",");
-            String isDeleted = attr[3];
 
-            String newLine = timestampStr + username + message + isDeleted;
+            String format = "%s& . _ . &%s& . _ . &%s";
+            String newLine = String.format(format, timestampStr,
+                    username, message);
+
             messageList.add(newLine);
         }
         bfr.close();
