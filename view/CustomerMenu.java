@@ -9,7 +9,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.*;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,29 +24,43 @@ import java.util.Map;
  * @author Tingyu Yin
  * @version April 15, 2023
  */
-public class CustomerMenu {
-    private static final String PROMPT_ACTION = "What do you want to do?";
-    private static final String BLOCK_LIST = "Block List";
-    private static final String INVISIBLE_LIST = "Invisible List";
+public class CustomerMenu extends Menu {
+
     private static final String VIEW_ALL_STORES = "View all the stores";
-    private static final String SEARCH_USER = "Search a user";
-    private static final String BLOCK_SUCCEED = "Successfully blocked this user!";
-    private static final String INVISIBLE_SUCCEED = "Successfully become invisible to this user!";
-    private static final String LOG_OUT = "Log out";
 
     public String message;
+    private String filename = "./src/customers.csv";
     private CSVReader csvReader;
-    private Customer customer;
+    public Customer customer;
     public List<String> blockList;
     public List<String> invisList;
     public List<String> sellerList = new ArrayList<>();
+    private JPanel invisiblePanel = new JPanel();
+    private JPanel blockPanel = new JPanel();
+    private Thread loginThread;
+    private PrintWriter output;
+    private BufferedReader input;
+    String serverName = "localhost";
+    int port = 9090;
 
     public void showCustomerMenu(Customer customer) throws IOException { // this is used when login and when go back
         run(customer);
     }
 
-    public CustomerMenu() { // used when login gui instance the CustomerMenu
+    public CustomerMenu(Customer customer) { // used when login gui instance the CustomerMenu
+        this.customer = customer;
         this.csvReader = new CSVReader();
+
+        try {
+            // initialize output and input streams
+            Socket socket = new Socket(serverName, port);
+            output = new PrintWriter(socket.getOutputStream(), true);
+            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void openViewStoresWindow(Customer customer) throws IOException { // to open view all the stores GUI
@@ -53,14 +70,15 @@ public class CustomerMenu {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }, customer); // the lambda expression is passed as the first argument,
+        }, this.customer, this); // the lambda expression is passed as the first argument,
         // and the Customer object is passed as the second argument
         storesWindow.run();
     }
 
     public void run(Customer customer) throws IOException {
 
-        CSVWriter CSVWriter = new CSVWriter();
+        CSVWriter writer = new CSVWriter(customer);
+
         Map<String, Seller> sellerMap = csvReader.readSellers();
 
         for (String seller : sellerMap.keySet()) {
@@ -81,9 +99,45 @@ public class CustomerMenu {
 
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JTextField searchField = new JTextField(25);
+        searchField.setEditable(false);
         searchPanel.add(new JLabel("Search user"));
         searchPanel.add(searchField);
         mainPanel.add(searchPanel, BorderLayout.NORTH);
+
+        searchField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Make the searchField editable when clicked
+                searchField.setEditable(true);
+            }
+        });
+
+        searchField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                String searchUsername = searchField.getText();
+                List<String> searUserInvisList = new ArrayList<>();
+                Seller searched = sellerMap.get(searchUsername);
+                if (searched == null) { // if searched user is null then no results
+                    JOptionPane.showMessageDialog(null, NO_RESULT + searchUsername,
+                            null, JOptionPane.ERROR_MESSAGE);
+                } else { // if found
+                    try {
+                        searUserInvisList = csvReader.getInvisList(searched);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (searUserInvisList.contains(searchUsername)) { // check invisible list
+                        JOptionPane.showMessageDialog(null, INVISIBLE_WARNING,
+                                null, JOptionPane.PLAIN_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(null, FOUND_USER + searched.getUsername(),
+                                null,JOptionPane.PLAIN_MESSAGE);
+                    }
+
+                }
+            }
+        });
 
         JPanel friendPanel = new JPanel();
         friendPanel.setLayout(new BoxLayout(friendPanel, BoxLayout.Y_AXIS));
@@ -103,9 +157,21 @@ public class CustomerMenu {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
                     // just add to block list, do not need to remove from sellerList(friendList)
-                    blockList.add(friend);
+                    if (blockList.contains(friend)) {
+                        JOptionPane.showMessageDialog(null, REPEAT_BLOCK,
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(null, BLOCK_SUCCEED,
+                                "", JOptionPane.INFORMATION_MESSAGE);
+                        blockList.add(friend);
+                    }
 
-                    // (write) update csv file to be implemented
+                    // (write) update csv file
+                    try {
+                        writer.writeBlockList(filename, blockList);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
 
@@ -115,9 +181,21 @@ public class CustomerMenu {
             ivsButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    invisList.add(friend);
+                    if (invisList.contains(friend)) {
+                        JOptionPane.showMessageDialog(null, REPEAT_INVISIBLE,
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(null, INVISIBLE_SUCCEED,
+                                "", JOptionPane.INFORMATION_MESSAGE);
+                        invisList.add(friend);
+                    }
 
-                    // (write) update csv file to be implemented
+                    // (write) update csv file
+                    try {
+                        writer.writeInvisList(filename, invisList);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
 
@@ -145,6 +223,7 @@ public class CustomerMenu {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 try {
+                    frame.dispose();
                     openViewStoresWindow(customer);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -169,6 +248,13 @@ public class CustomerMenu {
         logOutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                // Send a logout message to the server
+                try {
+                    output.println("logout");
+                } catch (Exception e) {
+                    System.out.println("Error sending logout message to server: " + e.getMessage());
+                }
+
                 frame.dispose();
             }
         });
@@ -179,6 +265,53 @@ public class CustomerMenu {
 
     }
 
+    // have to separately refresh the block panel
+    private void updateBlockPanel(List<String> blockList) {
+        CSVWriter writer = new CSVWriter(customer);
+
+        blockPanel.removeAll();
+
+        if (blockList.isEmpty()) {
+
+            JLabel emptyMessage = new JLabel("Block list is empty");
+            emptyMessage.setHorizontalAlignment(SwingConstants.CENTER);
+            blockPanel.add(emptyMessage);
+        } else {
+
+            for (String block : blockList) {
+                JPanel singleBlockPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                JLabel blockLabel = new JLabel(block);
+                blockLabel.setPreferredSize(new Dimension(100, 20));
+                singleBlockPanel.add(blockLabel);
+
+                JButton removeButton = new JButton("Remove");
+                singleBlockPanel.add(removeButton);
+
+                removeButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        blockList.remove(block);
+
+                        updateBlockPanel(blockList);
+                        blockPanel.revalidate();
+                        blockPanel.repaint();
+
+                        // (write) update csv file
+                        try {
+                            writer.writeBlockList(filename, blockList);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+
+                blockPanel.add(singleBlockPanel);
+            }
+        }
+
+    }
+
+
     // method to show block list
     private void showBlockDialog(Customer customer) {
         JDialog blockDialog = new JDialog();
@@ -187,59 +320,71 @@ public class CustomerMenu {
         blockDialog.setLocationRelativeTo(null);
         blockDialog.setTitle("Blocked User");
 
-        JPanel blockPanel = new JPanel();
-        for (String block : blockList) {
-            blockPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            JLabel blockLabel = new JLabel(block);
-            blockLabel.setPreferredSize(new Dimension(100, 20));
-            blockPanel.add(blockLabel);
+        blockPanel.setLayout(new BoxLayout(blockPanel, BoxLayout.Y_AXIS));
+        updateBlockPanel(blockList);
 
-            JButton removeButton = new JButton("Remove");
-            blockPanel.add(removeButton);
 
-            removeButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    blockList.remove(block);
-
-                    // (write) update csv file to be implemented
-                }
-            });
-        }
 
         JScrollPane scrollPane = new JScrollPane(blockPanel);
         blockDialog.add(scrollPane, BorderLayout.CENTER);
-
         blockDialog.setVisible(true);
+    }
+
+    public void updateInvisiblePanel(List<String> invisList) {
+        CSVWriter writer = new CSVWriter(customer);
+
+        invisiblePanel.removeAll();
+
+        if (invisList.isEmpty()) {
+            JLabel emptyLabel = new JLabel("Invisible list is empty");
+            invisiblePanel.add(emptyLabel);
+
+        } else {
+            for (String invisible : invisList) {
+                JPanel singleInvisiblePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                JLabel invisibleLabel = new JLabel(invisible);
+                invisibleLabel.setPreferredSize(new Dimension(100, 20));
+                singleInvisiblePanel.add(invisibleLabel);
+
+                JButton removeButton = new JButton("Remove");
+                singleInvisiblePanel.add(removeButton);
+
+                removeButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        invisList.remove(invisible);
+
+                        updateInvisiblePanel(invisList);
+                        invisiblePanel.revalidate();
+                        invisiblePanel.repaint();
+
+                        // (write) update csv file
+                        try {
+                            writer.writeInvisList(filename, invisList);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+
+                invisiblePanel.add(singleInvisiblePanel);
+            }
+        }
+
     }
 
     // method to show block list
     private void showInvisibleDialog(Customer customer) {
+
         JDialog invisibleDialog = new JDialog();
         invisibleDialog.setTitle("Become invisible to");
         invisibleDialog.setLayout(new BorderLayout());
         invisibleDialog.setSize(new Dimension(300, 400));
         invisibleDialog.setLocationRelativeTo(null);
 
-        JPanel invisiblePanel = new JPanel();
-        for (String invis : invisList) {
-            invisiblePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-            JLabel invisLabel = new JLabel(invis);
-            invisLabel.setPreferredSize(new Dimension(100, 20));
-            invisiblePanel.add(invisLabel);
+        invisiblePanel.setLayout(new BoxLayout(invisiblePanel, BoxLayout.Y_AXIS));
+        updateInvisiblePanel(invisList);
 
-            JButton removeButton = new JButton("Remove");
-            invisiblePanel.add(removeButton);
-
-            removeButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    invisList.remove(invis);
-
-                    // (write) update csv file to be implemented
-                }
-            });
-        }
 
         JScrollPane scrollPane = new JScrollPane(invisiblePanel);
         invisibleDialog.add(scrollPane, BorderLayout.CENTER);
