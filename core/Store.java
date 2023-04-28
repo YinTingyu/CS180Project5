@@ -1,6 +1,8 @@
 package core;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Hold information of seller's store
@@ -16,14 +18,16 @@ public class Store {
     private List<Double> price;
     private List<Integer> amountAvailable;
     private Seller seller;
+    private Map<String, Store> storeMap = new HashMap<>();
 
-    public Store(String storeName, List<String> product, List<Double> price,
-                 List<Integer> amountAvailable, Seller seller) {
+    public Store(String storeName, List<String> product, List<Integer> amountAvailable,
+                 List<Double> price, Seller seller) {
         this.storeName = storeName;
         this.product = product;
         this.price = price;
         this.amountAvailable = amountAvailable;
         this.seller = seller;
+        storeMap.put(storeName, this);
     }
 
     public String getStoreName() {
@@ -67,5 +71,18 @@ public class Store {
     public void setSeller(Seller seller) {
         this.seller = seller;
     }
+
+    public void addProduct(String newProduct, Integer amount, Double price) {
+        getProduct().add(newProduct);
+        getAmountAvailable().add(amount);
+        getPrice().add(price);
+    }
+
+    public void deleteProduct(int index) {
+        getProduct().remove(index);
+        getAmountAvailable().remove(index);
+        getPrice().remove(index);
+    }
 }
+
 
