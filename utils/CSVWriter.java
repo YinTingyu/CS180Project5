@@ -2,6 +2,7 @@ package utils;
 
 import core.Customer;
 import core.Seller;
+import core.Store;
 import core.User;
 
 import java.io.BufferedWriter;
@@ -12,6 +13,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CSVWriter {
@@ -181,18 +183,18 @@ public class CSVWriter {
     }
 
     public void writeProductName(int index, String newName) throws IOException {
-        
+
         String filename = "./src/" + "stores" + ".csv";
         List<String> allLines = csvReader.readAllLines(filename);
         BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
-        
+
         for (String line : allLines) {
             String[] attr = line.split(",");
             String[] productsInfo = attr[1].split(";");
             String[] product = productsInfo[index].split("-");
             product[0] = newName;
         }
-        
+
         // rewrite everything
         String header = String.format("%s,%s-%s-%s,%s",
                 "storeName", "product-amount-price", "sellerName");
@@ -237,8 +239,63 @@ public class CSVWriter {
         for (String line : allLines) {
             String[] attr = line.split(",");
             String[] productsInfo = attr[1].split(";");
-            String[] product = productsInfo[index].split("-");
+            String[] product = productsInfo[index].split("-"); // index
             product[2] = priceStr;
+        }
+
+        // rewrite everything
+        String header = String.format("%s,%s-%s-%s,%s",
+                "storeName", "product-amount-price", "sellerName");
+        bfw.write(header);
+        for (String line : allLines) {
+            bfw.write(line);
+            bfw.newLine();
+        }
+        bfw.close();
+    }
+
+    public void writeNewProduct(Store store, String name, String amount, String price) throws IOException {
+        String filename = "./src/" + "stores" + ".csv";
+        List<String> allLines = csvReader.readAllLines(filename);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+
+        for (String line : allLines) {
+            String[] attr = line.split(","); // each store's info
+
+            if (attr[0].equals(store.getStoreName())) { // find which store added new product
+                String[] products = attr[1].split(";");
+                List<String> productList = Arrays.asList(products);
+                String newProductInfo = String.format("%s-%s-%s", name, amount, price);
+                productList.add(newProductInfo);
+                String allProducts = String.join(";", productList);
+                attr[1] = allProducts;
+            }
+        }
+        // rewrite everything
+        String header = String.format("%s,%s-%s-%s,%s",
+                "storeName", "product-amount-price", "sellerName");
+        bfw.write(header);
+        for (String line : allLines) {
+            bfw.write(line);
+            bfw.newLine();
+        }
+        bfw.close();
+    }
+
+    public void updateProduct(Store store, int index) throws IOException {
+        String filename = "./src/" + "stores" + ".csv";
+        List<String> allLines = csvReader.readAllLines(filename);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+
+        for (String line : allLines) {
+            String[] attr = line.split(",");
+            if (attr[0].equals(store.getStoreName())) {
+                String[] products = attr[1].split(";");
+                List<String> productList = Arrays.asList(products);
+                productList.remove(index);
+                String allProducts = String.join(";", productList);
+                attr[1] = allProducts;
+            }
         }
 
         // rewrite everything
