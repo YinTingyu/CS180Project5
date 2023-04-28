@@ -128,7 +128,7 @@ public class SellerMenu extends Menu {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    if (searUserInvisList.contains(searchUsername)) { // check invisible list
+                    if (searUserInvisList.contains(seller.getUsername())) { // check if the seller in the searched user's invisible list
                         JOptionPane.showMessageDialog(null, INVISIBLE_WARNING,
                                 null, JOptionPane.PLAIN_MESSAGE);
                     } else {
