@@ -1,11 +1,14 @@
 package utils;
 
+import core.Customer;
+import core.Seller;
 import core.User;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -88,6 +91,7 @@ public class CSVWriter {
                 bfw.write(line);
                 bfw.newLine();
             }
+
         } else if (user.getRole().equals("Seller")) {
 
             String header = String.format("%s,%s,%s,%s,%s,%s",
@@ -174,5 +178,136 @@ public class CSVWriter {
             }
         }
         bfw.close();
+    }
+
+    public void writeProductName(int index, String newName) throws IOException {
+        
+        String filename = "./src/" + "stores" + ".csv";
+        List<String> allLines = csvReader.readAllLines(filename);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+        
+        for (String line : allLines) {
+            String[] attr = line.split(",");
+            String[] productsInfo = attr[1].split(";");
+            String[] product = productsInfo[index].split("-");
+            product[0] = newName;
+        }
+        
+        // rewrite everything
+        String header = String.format("%s,%s-%s-%s,%s",
+                "storeName", "product-amount-price", "sellerName");
+        bfw.write(header);
+        for (String line : allLines) {
+            bfw.write(line);
+            bfw.newLine();
+        }
+        bfw.close();
+    }
+
+    public void writeProductAmount(int index, Integer newAmount) throws IOException {
+
+        String filename = "./src/" + "stores" + ".csv";
+        List<String> allLines = csvReader.readAllLines(filename);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+        String amountStr = String.valueOf(newAmount);
+        for (String line : allLines) {
+            String[] attr = line.split(",");
+            String[] productsInfo = attr[1].split(";");
+            String[] product = productsInfo[index].split("-");
+            product[1] = amountStr;
+        }
+
+        // rewrite everything
+        String header = String.format("%s,%s-%s-%s,%s",
+                "storeName", "product-amount-price", "sellerName");
+        bfw.write(header);
+        for (String line : allLines) {
+            bfw.write(line);
+            bfw.newLine();
+        }
+        bfw.close();
+    }
+
+    public void writeProductPrice(int index, Double newPrice) throws IOException {
+
+        String filename = "./src/" + "stores" + ".csv";
+        List<String> allLines = csvReader.readAllLines(filename);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+        String priceStr = String.valueOf(newPrice);
+        for (String line : allLines) {
+            String[] attr = line.split(",");
+            String[] productsInfo = attr[1].split(";");
+            String[] product = productsInfo[index].split("-");
+            product[2] = priceStr;
+        }
+
+        // rewrite everything
+        String header = String.format("%s,%s-%s-%s,%s",
+                "storeName", "product-amount-price", "sellerName");
+        bfw.write(header);
+        for (String line : allLines) {
+            bfw.write(line);
+            bfw.newLine();
+        }
+        bfw.close();
+    }
+
+
+    public void writeLatestLogOutTime(Timestamp timestamp, User user) throws IOException {
+        String tsp = timestamp.toString();
+        if (user instanceof Customer) {
+            String filename = "./src/" + "customers" + ".csv";
+            BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+            List<String> allLines = csvReader.readAllLines(filename);
+
+            for (int i = 0; i < allLines.size(); i++) {
+                String[] attr = allLines.get(i).split(",");
+                if (attr[0].equals(user.getUsername())) { // find the line of user who log out
+                    attr[5] = tsp;
+                    String newline = String.join(",", attr);
+                    allLines.set(i, newline);
+                    break;
+                }
+            }
+
+            // rewrite everything include header
+            if (user.getRole().equals("Customer")) {
+
+                String header = String.format("%s,%s,%s,%s,%s",
+                        "username", "password", "conversation", "blocklist", "invislist");
+                bfw.write(header);
+                for (String line : allLines) {
+                    bfw.write(line);
+                    bfw.newLine();
+                }
+            }
+
+        } else if (user instanceof Seller) {
+            String filename = "./src/" + "sellers" + ".csv";
+            BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+            List<String> allLines = csvReader.readAllLines(filename);
+
+            for (int i = 0; i < allLines.size(); i++) {
+                String[] attr = allLines.get(i).split(",");
+                if (attr[0].equals(user.getUsername())) { // find the line of user who log out
+                    attr[5] = tsp;
+                    String newline = String.join(",", attr);
+                    allLines.set(i, newline);
+                    break;
+                }
+            }
+
+            // rewrite everything include header
+            if (user.getRole().equals("Customer")) {
+
+                String header = String.format("%s,%s,%s,%s,%s",
+                        "username", "password", "conversation", "blocklist", "invislist");
+                bfw.write(header);
+                for (String line : allLines) {
+                    bfw.write(line);
+                    bfw.newLine();
+                }
+            }
+        }
     }
 }
