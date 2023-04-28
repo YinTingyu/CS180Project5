@@ -114,7 +114,7 @@ public class CustomerMenu extends Menu {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    if (searUserInvisList.contains(searchUsername)) { // check invisible list
+                    if (searUserInvisList.contains(customer.getUsername())) { // check if the customer in the user's invisible list
                         JOptionPane.showMessageDialog(null, INVISIBLE_WARNING,
                                 null, JOptionPane.PLAIN_MESSAGE);
                     } else {
