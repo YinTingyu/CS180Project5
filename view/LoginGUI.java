@@ -3,8 +3,6 @@ package view;
 import core.Customer;
 import core.Seller;
 import core.User;
-import io.Client;
-import io.ClientHandler;
 import utils.CSVReader;
 
 import javax.swing.*;
@@ -14,8 +12,6 @@ import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.util.*;
 
 /**
@@ -43,8 +39,7 @@ public class LoginGUI implements ActionListener {
     private static JLabel passwordLabel;
     static JPasswordField passwordText;
     static JLabel success;
-    String serverName = "localhost";
-    int port = 9090;
+
 
     private final Map<String, User> userMap = new HashMap<>();
 
@@ -157,13 +152,12 @@ public class LoginGUI implements ActionListener {
                 success.setText(LOGIN_SUCCEED);
                 openCustomerMenu((Customer) user);
 
-                
 
             } else if (user instanceof Seller) {
                 success.setText(LOGIN_SUCCEED);
                 openSellerMenu((Seller) user);
 
-                
+
             }
 
         } else if (actionEvent.equals("Register")) {
@@ -261,7 +255,6 @@ public class LoginGUI implements ActionListener {
                             throw new RuntimeException(ex);
                         }
 
-                        
 
                     } else {
 
@@ -284,7 +277,6 @@ public class LoginGUI implements ActionListener {
                             throw new RuntimeException(ex);
                         }
 
-                        
                     }
 
                 }
