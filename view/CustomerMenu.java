@@ -11,8 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.*;
-import java.net.Socket;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +36,8 @@ public class CustomerMenu extends Menu {
     public List<String> sellerList = new ArrayList<>();
     private JPanel invisiblePanel = new JPanel();
     private JPanel blockPanel = new JPanel();
-    
-    
+
+
 
     public void showCustomerMenu(Customer customer) throws IOException { // this is used when login and when go back
         run(customer);
@@ -47,7 +46,7 @@ public class CustomerMenu extends Menu {
     public CustomerMenu(Customer customer) { // used when login gui instance the CustomerMenu
         this.customer = customer;
         this.csvReader = new CSVReader();
-        
+
 
     }
 
@@ -139,7 +138,7 @@ public class CustomerMenu extends Menu {
 
             JPanel friendButtonPanel = new JPanel();
             JButton blockButton = new JButton("Block");
-            
+
             friendButtonPanel.add(blockButton);
             blockButton.addActionListener(new ActionListener() {
                 @Override
@@ -164,7 +163,7 @@ public class CustomerMenu extends Menu {
             });
 
             JButton ivsButton = new JButton("Invisible");
-            
+
             friendButtonPanel.add(ivsButton);
             ivsButton.addActionListener(new ActionListener() {
                 @Override
@@ -236,7 +235,7 @@ public class CustomerMenu extends Menu {
         logOutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                
+
 
                 frame.dispose();
             }
