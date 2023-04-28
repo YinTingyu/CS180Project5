@@ -37,11 +37,8 @@ public class CustomerMenu extends Menu {
     public List<String> sellerList = new ArrayList<>();
     private JPanel invisiblePanel = new JPanel();
     private JPanel blockPanel = new JPanel();
-    private Thread loginThread;
-    private PrintWriter output;
-    private BufferedReader input;
-    String serverName = "localhost";
-    int port = 9090;
+    
+    
 
     public void showCustomerMenu(Customer customer) throws IOException { // this is used when login and when go back
         run(customer);
@@ -50,16 +47,7 @@ public class CustomerMenu extends Menu {
     public CustomerMenu(Customer customer) { // used when login gui instance the CustomerMenu
         this.customer = customer;
         this.csvReader = new CSVReader();
-
-        try {
-            // initialize output and input streams
-            Socket socket = new Socket(serverName, port);
-            output = new PrintWriter(socket.getOutputStream(), true);
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        
 
     }
 
@@ -151,7 +139,7 @@ public class CustomerMenu extends Menu {
 
             JPanel friendButtonPanel = new JPanel();
             JButton blockButton = new JButton("Block");
-            blockButton.setBackground(Color.RED); // do not show?
+            
             friendButtonPanel.add(blockButton);
             blockButton.addActionListener(new ActionListener() {
                 @Override
@@ -176,7 +164,7 @@ public class CustomerMenu extends Menu {
             });
 
             JButton ivsButton = new JButton("Invisible");
-            ivsButton.setBackground(Color.GRAY); // do not show ?...
+            
             friendButtonPanel.add(ivsButton);
             ivsButton.addActionListener(new ActionListener() {
                 @Override
@@ -248,12 +236,7 @@ public class CustomerMenu extends Menu {
         logOutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                // Send a logout message to the server
-                try {
-                    output.println("logout");
-                } catch (Exception e) {
-                    System.out.println("Error sending logout message to server: " + e.getMessage());
-                }
+                
 
                 frame.dispose();
             }
