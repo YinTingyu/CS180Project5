@@ -3,6 +3,7 @@ package view;
 import core.Seller;
 import core.Store;
 import utils.CSVReader;
+import utils.CSVWriter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -12,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ManageStoresWindow {
     private static final String INVALID_AMOUNT = "Invalid amount input. Please enter a valid integer.";
@@ -37,6 +39,7 @@ public class ManageStoresWindow {
     public void run() throws IOException {
 
         CSVReader reader = new CSVReader();
+        CSVWriter writer = new CSVWriter(seller);
         sellerStores = reader.getSellerStores(seller);
 
         JFrame frame = new JFrame("Manege My Stores");
@@ -95,6 +98,18 @@ public class ManageStoresWindow {
                     price.add(newPrice);
                     Store newStore = new Store(storeName, product, amount, price, seller);
                     sellerStores.add(newStore);
+
+                    // update csv file
+                    List<String> storeList = new ArrayList<>();
+                    for (Store store : sellerStores) {
+                        storeList.add(store.getStoreName());
+                    }
+                    try {
+                        writer.writeStores(storeList);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
                     mainPanel[0] = createStorePanel(sellerStores);
 
                     frame.getContentPane().removeAll();
@@ -127,6 +142,18 @@ public class ManageStoresWindow {
                             "Delete a Store", JOptionPane.YES_NO_OPTION);
                     if (reConfirm == JOptionPane.OK_OPTION) {
                         sellerStores.remove(option);
+
+                        // update csv file
+                        List<String> storeList = new ArrayList<>();
+                        for (Store store : sellerStores) {
+                            storeList.add(store.getStoreName());
+                        }
+                        try {
+                            writer.writeStores(storeList);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+
                         mainPanel[0] = createStorePanel(sellerStores);
 
                         frame.getContentPane().removeAll();
@@ -172,6 +199,7 @@ public class ManageStoresWindow {
 
     public JPanel createStorePanel(List<Store> sellerStores) {
 
+        CSVWriter writer = new CSVWriter(seller);
         // mainPanel to hold store panel
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -252,30 +280,50 @@ public class ManageStoresWindow {
 
                         if (selectedRow != -1) {
                             Object getNewValue = tableModel.getValueAt(selectedRow, selectedCol);
-                            if (selectedCol == 0) {
+                            if (selectedCol == 0) { // name of product
                                 products.set(selectedRow, (String) getNewValue);
-                            } else if (selectedCol == 1) {
+
+                                // write csv
+                                try {
+                                    writer.writeProductName(selectedRow, (String) getNewValue);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+
+                            } else if (selectedCol == 1) { // amount of product
 
                                 try {
                                     amounts.set(selectedRow, (Integer) getNewValue);
+
+                                    // write csv
+                                    writer.writeProductAmount(selectedRow, (Integer) getNewValue);
+
                                 } catch (NumberFormatException e) {
                                     // Handle invalid integer input
                                     JOptionPane.showMessageDialog(null, INVALID_AMOUNT);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
                                 }
 
-                            } else if (selectedCol == 2) {
+                            } else if (selectedCol == 2) { // price
 
                                 try {
                                     prices.set(selectedRow, (Double) getNewValue);
+
+                                    // write csv
+                                    writer.writeProductPrice(selectedRow, (Double) getNewValue);
+
                                 } catch (NumberFormatException e) {
                                     // Handle invalid double input
                                     JOptionPane.showMessageDialog(null, INVALID_PRICE);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
                                 }
 
                             }
                         }
 
-                        // write csv file to be implemented
 
                     }
                 });
@@ -308,6 +356,15 @@ public class ManageStoresWindow {
                             Object[] newProductData = {newNameStr, newAmount, newPrice};
                             tableModel.addRow(newProductData);
                             tableModel.fireTableDataChanged();
+
+                            // write csv
+                            String amountStr = String.valueOf(newAmount);
+                            String priceStr = String.valueOf(newPrice);
+                            try {
+                                writer.writeNewProduct(store, newNameStr, amountStr, priceStr);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
 
                     }
@@ -326,6 +383,13 @@ public class ManageStoresWindow {
                             } else {
                                 JOptionPane.showMessageDialog(null, "No product is selected!",
                                         "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+
+                            // write csv
+                            try {
+                                writer.updateProduct(store, selectedRow);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
                             }
                         }
 
