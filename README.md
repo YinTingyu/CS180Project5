@@ -25,7 +25,7 @@ Tingyu Yin - Submitted Report on Brightspace. Srinath Dantu - Submitted Vocareum
 
   - **Message**: The class includes fields for the message's sender, recipient, content, and timestamp. The constructor for this class takes a sender, recipient, and content, and automatically generates a timestamp for the message based on the current date and time. The class provides methods for getting and setting the sender, recipient, content, and timestamp fields.
 
-2. **view (GUI)**
+2. **View (GUI)**
 
   - **LoginGUI**: This class implements the ActionListener interface. It includes final fields for several messages, two panels (loginPanel and signUpPanel), labels and text fields for username and password, and buttons for login and registration. It also includes methods for opening the customer and seller menus, and a run() method that creates a JFrame and sets up the card layout and components for the login panel. The actionPerformed() method checks the user's credentials, creates a new account window, or shows an error message depending on the user's input. The createAccountWindow() method sets up a JFrame and components for the registration panel and writes the new user's information to a CSV file.
   
