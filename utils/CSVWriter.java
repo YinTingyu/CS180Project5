@@ -5,10 +5,7 @@ import core.Seller;
 import core.Store;
 import core.User;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,6 +23,13 @@ public class CSVWriter {
     public CSVWriter(User user) {
         this.user = user;
     }
+
+    public CSVWriter() {
+        
+    }
+    private String customerFile = "./src/customers.csv";
+    private String sellerFile = "./src/sellers.csv";
+    private String storeFile = "./src/" + "stores" + ".csv";
 
     public void writeMessage(String conversationFile, String message) throws IOException {
 
@@ -61,31 +65,33 @@ public class CSVWriter {
         bfw.close();
     }
 
-    public void writeBlockList(String filename, List<String> blockList) throws IOException {
+    public void writeBlockList(User user, List<String> blockList) throws IOException {
 
         List<String> allLines = new ArrayList<>();
         // join block list to a string separate by ";"
         String blockListStr = String.join(";", blockList);
-        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
-        allLines = csvReader.readAllLines(filename);
-
-        for (int i = 0; i < allLines.size(); i++) { // find the position of block list
-            // separate the element of each line by ","
-            String[] parts = allLines.get(i).split(",");
-
-            if (parts[0].equals(user.getUsername())) { // find the correct user
-                // only update this line
-                parts[3] = blockListStr; // the forth element of this line is block list
-                // reset this line in allLine list
-                String newline = String.join(",", parts);
-                allLines.set(i, newline);
-                break;
-            }
-        }
+        BufferedWriter bfw;
 
         // rewrite everything include header
-        if (user.getRole().equals("Customer")) {
+        if (user instanceof Customer) {
+            bfw = new BufferedWriter(new FileWriter(customerFile));
+            
+            allLines = csvReader.readAllLines(customerFile);
+            
+            for (int i = 0; i < allLines.size(); i++) { // find the position of block list
+                // separate the element of each line by ","
+                String[] parts = allLines.get(i).split(",");
 
+                if (parts[0].equals(user.getUsername())) { // find the correct user
+                    // only update this line
+                    parts[3] = blockListStr; // the forth element of this line is block list
+                    // reset this line in allLine list
+                    String newline = String.join(",", parts);
+                    allLines.set(i, newline);
+                    break;
+                }
+            }
+            
             String header = String.format("%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist");
             bfw.write(header);
@@ -93,8 +99,27 @@ public class CSVWriter {
                 bfw.write(line);
                 bfw.newLine();
             }
+            bfw.close();
 
-        } else if (user.getRole().equals("Seller")) {
+        } else if (user instanceof Seller) {
+
+            bfw = new BufferedWriter(new FileWriter(sellerFile));
+
+            allLines = csvReader.readAllLines(sellerFile);
+
+            for (int i = 0; i < allLines.size(); i++) { // find the position of block list
+                // separate the element of each line by ","
+                String[] parts = allLines.get(i).split(",");
+
+                if (parts[0].equals(user.getUsername())) { // find the correct user
+                    // only update this line
+                    parts[3] = blockListStr; // the forth element of this line is block list
+                    // reset this line in allLine list
+                    String newline = String.join(",", parts);
+                    allLines.set(i, newline);
+                    break;
+                }
+            }
 
             String header = String.format("%s,%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist", "stores");
@@ -103,18 +128,18 @@ public class CSVWriter {
                 bfw.write(line);
                 bfw.newLine();
             }
+            bfw.close();
         }
 
-        bfw.close();
+        
     }
 
-    public void writeInvisList(String filename, List<String> invisList) throws IOException {
+    public void writeInvisList(User user, List<String> invisList) throws IOException {
 
         List<String> allLines = new ArrayList<>();
         String invisListStr = String.join(";", invisList);
-
-        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
-        allLines = csvReader.readAllLines(filename);
+        BufferedWriter bfw;
+        
         for (int i = 0; i < allLines.size(); i++) {
             String[] parts = allLines.get(i).split(",");
 
@@ -130,7 +155,23 @@ public class CSVWriter {
 
         // rewrite everything include header
         if (user.getRole().equals("Customer")) {
+            bfw = new BufferedWriter(new FileWriter(customerFile));
+            
+            allLines = csvReader.readAllLines(customerFile);
+            
+            for (int i = 0; i < allLines.size(); i++) {
+                String[] parts = allLines.get(i).split(",");
 
+                if (parts[0].equals(user.getUsername())) { // find the correct user
+                    // only update this line
+                    parts[4] = invisListStr; // the fifth element of this line is invisible list
+                    // reset this line in allLine list
+                    String newline = String.join(",", parts);
+                    allLines.set(i, newline);
+                    break;
+                }
+            }
+            
             String header = String.format("%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist");
             bfw.write(header);
@@ -138,7 +179,25 @@ public class CSVWriter {
                 bfw.write(line);
                 bfw.newLine();
             }
+            bfw.close();
+            
         } else if (user.getRole().equals("Seller")) {
+            bfw = new BufferedWriter(new FileWriter(sellerFile));
+
+            allLines = csvReader.readAllLines(sellerFile);
+
+            for (int i = 0; i < allLines.size(); i++) {
+                String[] parts = allLines.get(i).split(",");
+
+                if (parts[0].equals(user.getUsername())) { // find the correct user
+                    // only update this line
+                    parts[4] = invisListStr; // the fifth element of this line is invisible list
+                    // reset this line in allLine list
+                    String newline = String.join(",", parts);
+                    allLines.set(i, newline);
+                    break;
+                }
+            }
 
             String header = String.format("%s,%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist", "stores");
@@ -147,15 +206,15 @@ public class CSVWriter {
                 bfw.write(line);
                 bfw.newLine();
             }
+            bfw.close();
         }
-        bfw.close();
+        
     }
 
     public void writeStores(List<String> storesList) throws IOException {
-
-        String filename = "./src/" + "sellers" + ".csv";
-        List<String> allLines = csvReader.readAllLines(filename);
-        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+        
+        List<String> allLines = csvReader.readAllLines(sellerFile);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(sellerFile));
         String storesStr = String.join(";", storesList);
 
         for (int i = 0; i < allLines.size(); i++) {
@@ -167,26 +226,20 @@ public class CSVWriter {
                 break;
             }
         }
-
-        // rewrite everything include header
-        if (user.getRole().equals("Customer")) {
-
-            String header = String.format("%s,%s,%s,%s,%s",
-                    "username", "password", "conversation", "blocklist", "invislist");
-            bfw.write(header);
-            for (String line : allLines) {
-                bfw.write(line);
-                bfw.newLine();
-            }
+        String header = String.format("%s,%s,%s,%s,%s,%s",
+                "username", "password", "conversation", "blocklist", "invislist", "stores");
+        bfw.write(header);
+        for (String line : allLines) {
+            bfw.write(line);
+            bfw.newLine();
         }
         bfw.close();
     }
 
     public void writeProductName(int index, String newName) throws IOException {
-
-        String filename = "./src/" + "stores" + ".csv";
-        List<String> allLines = csvReader.readAllLines(filename);
-        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+        
+        List<String> allLines = csvReader.readAllLines(storeFile);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
 
         for (String line : allLines) {
             String[] attr = line.split(",");
@@ -207,10 +260,9 @@ public class CSVWriter {
     }
 
     public void writeProductAmount(int index, Integer newAmount) throws IOException {
-
-        String filename = "./src/" + "stores" + ".csv";
-        List<String> allLines = csvReader.readAllLines(filename);
-        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+        
+        List<String> allLines = csvReader.readAllLines(storeFile);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
         String amountStr = String.valueOf(newAmount);
         for (String line : allLines) {
             String[] attr = line.split(",");
@@ -231,10 +283,9 @@ public class CSVWriter {
     }
 
     public void writeProductPrice(int index, Double newPrice) throws IOException {
-
-        String filename = "./src/" + "stores" + ".csv";
-        List<String> allLines = csvReader.readAllLines(filename);
-        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+        
+        List<String> allLines = csvReader.readAllLines(storeFile);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
         String priceStr = String.valueOf(newPrice);
         for (String line : allLines) {
             String[] attr = line.split(",");
@@ -255,9 +306,9 @@ public class CSVWriter {
     }
 
     public void writeNewProduct(Store store, String name, String amount, String price) throws IOException {
-        String filename = "./src/" + "stores" + ".csv";
-        List<String> allLines = csvReader.readAllLines(filename);
-        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+        
+        List<String> allLines = csvReader.readAllLines(storeFile);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
 
         for (String line : allLines) {
             String[] attr = line.split(","); // each store's info
@@ -283,9 +334,9 @@ public class CSVWriter {
     }
 
     public void updateProduct(Store store, int index) throws IOException {
-        String filename = "./src/" + "stores" + ".csv";
-        List<String> allLines = csvReader.readAllLines(filename);
-        BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
+        
+        List<String> allLines = csvReader.readAllLines(storeFile);
+        BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
 
         for (String line : allLines) {
             String[] attr = line.split(",");
@@ -365,6 +416,23 @@ public class CSVWriter {
                     bfw.newLine();
                 }
             }
+        }
+    }
+
+    public void writeNewAccount(User newUser) throws IOException {
+        BufferedWriter bfw;
+        
+        if (newUser instanceof Customer) {
+            bfw = new BufferedWriter(new FileWriter(customerFile, true));
+            String newCustomer = newUser.getUsername() + ","
+                    + newUser.getPassword() + ",...,...,...";
+            bfw.write(newCustomer);
+
+        } else if (newUser instanceof Seller) {
+            bfw = new BufferedWriter(new FileWriter(sellerFile, true));
+            String newSeller = newUser.getUsername() + ","
+                    + newUser.getPassword() + ",...,...,...";
+            bfw.write(newSeller);
         }
     }
 }
