@@ -10,6 +10,8 @@ import java.util.List;
  *
  * @author Tingyu Yin
  * @version April 8, 2023
+ * 
+ * modified by O. Wang to add a setConversations method
  */
 public class User {
     private String password;
@@ -80,7 +82,7 @@ public class User {
         Message message = new Message(this, recipient, content);
         ConversationHistory history = conversations.get(recipient);
         if (history == null) {
-            history = new ConversationHistory(new ArrayList<>());
+            history = new ConversationHistory(new ArrayList<>(), new ArrayList<>());
             conversations.put(recipient, history);
         }
         history.getMessagesHis().add(message);
@@ -115,5 +117,9 @@ public class User {
 
     public void addConversation(User u, ConversationHistory c) {
         conversations.put(u, c);
+    }
+
+    public void setConversations(HashMap<User, ConversationHistory> conversations) {
+        this.conversations = conversations;
     }
 }
