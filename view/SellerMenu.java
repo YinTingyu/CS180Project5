@@ -13,6 +13,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +171,7 @@ public class SellerMenu extends Menu {
 
                     // (write) update csv file
                     try {
-                        writer.writeBlockList(filename, blockList);
+                        writer.writeBlockList(seller, blockList);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -193,7 +195,7 @@ public class SellerMenu extends Menu {
 
                     // (write) update csv file
                     try {
-                        writer.writeInvisList(filename, invisList);
+                        writer.writeInvisList(seller, invisList);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -265,6 +267,11 @@ public class SellerMenu extends Menu {
         logOutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                // get timestamp when log out
+                Timestamp logOutTimestamp = new Timestamp(System.currentTimeMillis());
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String logOutTspStr = dateFormat.format(logOutTimestamp);
                 frame.dispose();
             }
         });
@@ -306,7 +313,7 @@ public class SellerMenu extends Menu {
 
                         // (write) update csv file
                         try {
-                            writer.writeBlockList(filename, blockList);
+                            writer.writeBlockList(seller, blockList);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -368,7 +375,7 @@ public class SellerMenu extends Menu {
 
                         // (write) update csv file
                         try {
-                            writer.writeInvisList(filename, invisList);
+                            writer.writeInvisList(seller, invisList);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
