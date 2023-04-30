@@ -155,7 +155,7 @@ public class CustomerMenu extends Menu {
 
                     // (write) update csv file
                     try {
-                        writer.writeBlockList(filename, blockList);
+                        writer.writeBlockList(customer, blockList);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -179,7 +179,7 @@ public class CustomerMenu extends Menu {
 
                     // (write) update csv file
                     try {
-                        writer.writeInvisList(filename, invisList);
+                        writer.writeInvisList(customer, invisList);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -280,7 +280,7 @@ public class CustomerMenu extends Menu {
 
                         // (write) update csv file
                         try {
-                            writer.writeBlockList(filename, blockList);
+                            writer.writeBlockList(customer, blockList);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -342,7 +342,7 @@ public class CustomerMenu extends Menu {
 
                         // (write) update csv file
                         try {
-                            writer.writeInvisList(filename, invisList);
+                            writer.writeInvisList(customer, invisList);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
