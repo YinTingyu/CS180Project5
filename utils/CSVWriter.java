@@ -74,12 +74,11 @@ public class CSVWriter {
 
         // join block list to a string separate by ";"
         String blockListStr = String.join(";", blockList);
-        BufferedWriter bfw;
 
         // rewrite everything include header
         if (user.getRole().equals("Customer")) {
             List<String> allLines = csvReader.readAllLines(customerFile);
-            bfw = new BufferedWriter(new FileWriter(customerFile));
+            BufferedWriter bfw = new BufferedWriter(new FileWriter(customerFile));
 
             for (int i = 0; i < allLines.size(); i++) { // find the position of block list
                 // separate the element of each line by ","
@@ -107,7 +106,7 @@ public class CSVWriter {
         } else if (user.getRole().equals("Seller")) {
 
             List<String> allLines = csvReader.readAllLines(sellerFile);
-            bfw = new BufferedWriter(new FileWriter(sellerFile));
+            BufferedWriter bfw = new BufferedWriter(new FileWriter(sellerFile));
 
 
             for (int i = 0; i < allLines.size(); i++) { // find the position of block list
@@ -140,7 +139,6 @@ public class CSVWriter {
     public void writeInvisList(User user, List<String> invisList) throws IOException {
 
         String invisListStr = String.join(";", invisList);
-        BufferedWriter bfw;
 
         // rewrite everything include header
         if (user.getRole().equals("Customer")) {
@@ -158,7 +156,7 @@ public class CSVWriter {
                 }
             }
 
-            bfw = new BufferedWriter(new FileWriter(customerFile));
+            BufferedWriter bfw = new BufferedWriter(new FileWriter(customerFile));
 
             String header = String.format("%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist");
@@ -185,7 +183,7 @@ public class CSVWriter {
                 }
             }
 
-            bfw = new BufferedWriter(new FileWriter(sellerFile));
+            BufferedWriter bfw = new BufferedWriter(new FileWriter(sellerFile));
             String header = String.format("%s,%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist", "stores");
             bfw.write(header + "\n");
