@@ -144,10 +144,7 @@ public class CSVWriter {
 
         // rewrite everything include header
         if (user.getRole().equals("Customer")) {
-
-            bfw = new BufferedWriter(new FileWriter(customerFile));
             List<String> allLines = csvReader.readAllLines(customerFile);
-
             for (int i = 0; i < allLines.size(); i++) {
                 String[] parts = allLines.get(i).split(",");
 
@@ -161,6 +158,8 @@ public class CSVWriter {
                 }
             }
 
+            bfw = new BufferedWriter(new FileWriter(customerFile));
+
             String header = String.format("%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist");
             bfw.write(header + "\n");
@@ -171,8 +170,6 @@ public class CSVWriter {
             bfw.close();
 
         } else if (user.getRole().equals("Seller")) {
-            bfw = new BufferedWriter(new FileWriter(sellerFile));
-
             List<String> allLines = csvReader.readAllLines(sellerFile);
 
             for (int i = 0; i < allLines.size(); i++) {
@@ -188,6 +185,7 @@ public class CSVWriter {
                 }
             }
 
+            bfw = new BufferedWriter(new FileWriter(sellerFile));
             String header = String.format("%s,%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist", "stores");
             bfw.write(header + "\n");
