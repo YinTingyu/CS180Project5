@@ -12,20 +12,21 @@ import java.util.List;
  * @version April 8, 2023
  */
 public class Seller extends User {
-    private List<Store> stores;
-    private double income;
+    private List<Store> storelist;
 
     public Seller(String email, String password) {
         super(email, password, "Seller");
-        stores = new ArrayList<>();
+        storelist = new ArrayList<>();
         // initialize stores instance !!! otherwise you will get NullPointerError
     }
 
-
-
     // sellers can get all his stores
     public List<Store> getStores() {
-        return stores;
+        return storelist;
+    }
+
+    public void setStores(List<Store> stores) {
+        storelist = stores;
     }
 
 }
