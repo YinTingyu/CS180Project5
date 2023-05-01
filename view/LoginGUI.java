@@ -9,9 +9,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.net.*;
 import java.util.*;
 
 /**
@@ -23,6 +22,17 @@ import java.util.*;
  * @version April 18, 2023
  */
 public class LoginGUI implements ActionListener {
+
+    private static final String CREATE_NEW_ACCOUNT_OPTION_CODE = "AA01";
+    private static final String LOG_IN_OPTION_CODE = "AA02";
+    private static final String EXIT_FIRST_MENU_OPTION_CODE = "AA03";
+
+    private static final String CONTACT_USER_CODE = "BB01";
+    private static final String BLOCK_USER_CODE = "BB02";
+    private static final String SET_INVISIBLE_CODE = "BB03";
+    private static final String VIEW_DASHBOARD_CODE = "BB04";
+    private static final String EXPORT_FILE_CODE = "BB05";
+    private static final String CREATE_STORE_CODE = "BB06";
 
     private static final String SIGNUP_TITLE = "Create Account";
     private static final String REGISTER_SUCCESS_MSG = "Create account successfully!";
@@ -40,6 +50,26 @@ public class LoginGUI implements ActionListener {
     static JPasswordField passwordText;
     static JLabel success;
 
+    private Socket socket;
+    BufferedReader bfr;
+    PrintWriter pw;
+
+    public LoginGUI()
+    {
+        socket = null;
+        bfr = null;
+        pw = null;
+    }
+
+    public LoginGUI(Socket socket)
+    {
+        try{
+            bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            pw = new PrintWriter(socket.getOutputStream());
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private final Map<String, User> userMap = new HashMap<>();
 
@@ -241,6 +271,9 @@ public class LoginGUI implements ActionListener {
                         userMap.put(username, newUser);
 
                         // write csv file
+
+                        //tell server to write to CSV file
+                        pw.println(CREATE_NEW_ACCOUNT_OPTION_CODE + "$Customer$" + username + password);
                         String file = "./src/customers.csv";
                         try {
 
@@ -264,6 +297,7 @@ public class LoginGUI implements ActionListener {
                         userMap.put(username, newUser);
 
                         // write csv file
+                        pw.println(CREATE_NEW_ACCOUNT_OPTION_CODE + "$Seller$" + username + password);
                         String file = "./src/sellers.csv";
                         try {
 
@@ -286,7 +320,6 @@ public class LoginGUI implements ActionListener {
 
         signUpFrame.setVisible(true);
     }
-
     public static void main(String[] args) {
         LoginGUI login = new LoginGUI();
         login.run();
