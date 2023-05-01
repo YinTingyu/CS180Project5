@@ -68,8 +68,14 @@ public class CustomerMenu extends Menu {
 
         Map<String, Seller> sellerMap = csvReader.readSellers();
 
+        // check other side's invisible list
         for (String seller : sellerMap.keySet()) {
             sellerList.add(seller);
+            Seller se = sellerMap.get(seller);
+            List<String> otherSide = csvReader.getInvisList(se);
+            if (otherSide.contains(customer.getUsername())) {
+                sellerList.remove(seller);
+            }
         }
 
         blockList = csvReader.getBlockList(customer); // load all the blocked users
