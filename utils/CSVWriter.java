@@ -25,12 +25,14 @@ public class CSVWriter {
     }
 
     public CSVWriter() {
-        
+
     }
     private String customerFile = "./src/customers.csv";
     private String sellerFile = "./src/sellers.csv";
     private String storeFile = "./src/" + "stores" + ".csv";
 
+
+    // used when user send a message
     public void writeMessage(String conversationFile, String message) throws IOException {
 
         LocalDateTime now = LocalDateTime.now();
@@ -50,6 +52,8 @@ public class CSVWriter {
 
     }
 
+
+    // used when user edit conversations
     public void updateConversationFile(String filename, List<String> newMessages) throws IOException {
 
         BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
@@ -75,9 +79,9 @@ public class CSVWriter {
         // rewrite everything include header
         if (user instanceof Customer) {
             bfw = new BufferedWriter(new FileWriter(customerFile));
-            
+
             allLines = csvReader.readAllLines(customerFile);
-            
+
             for (int i = 0; i < allLines.size(); i++) { // find the position of block list
                 // separate the element of each line by ","
                 String[] parts = allLines.get(i).split(",");
@@ -91,7 +95,7 @@ public class CSVWriter {
                     break;
                 }
             }
-            
+
             String header = String.format("%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist");
             bfw.write(header);
@@ -131,7 +135,7 @@ public class CSVWriter {
             bfw.close();
         }
 
-        
+
     }
 
     public void writeInvisList(User user, List<String> invisList) throws IOException {
@@ -139,7 +143,7 @@ public class CSVWriter {
         List<String> allLines = new ArrayList<>();
         String invisListStr = String.join(";", invisList);
         BufferedWriter bfw;
-        
+
         for (int i = 0; i < allLines.size(); i++) {
             String[] parts = allLines.get(i).split(",");
 
@@ -156,9 +160,9 @@ public class CSVWriter {
         // rewrite everything include header
         if (user.getRole().equals("Customer")) {
             bfw = new BufferedWriter(new FileWriter(customerFile));
-            
+
             allLines = csvReader.readAllLines(customerFile);
-            
+
             for (int i = 0; i < allLines.size(); i++) {
                 String[] parts = allLines.get(i).split(",");
 
@@ -171,7 +175,7 @@ public class CSVWriter {
                     break;
                 }
             }
-            
+
             String header = String.format("%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist");
             bfw.write(header);
@@ -180,7 +184,7 @@ public class CSVWriter {
                 bfw.newLine();
             }
             bfw.close();
-            
+
         } else if (user.getRole().equals("Seller")) {
             bfw = new BufferedWriter(new FileWriter(sellerFile));
 
@@ -208,11 +212,11 @@ public class CSVWriter {
             }
             bfw.close();
         }
-        
+
     }
 
     public void writeStores(List<String> storesList) throws IOException {
-        
+
         List<String> allLines = csvReader.readAllLines(sellerFile);
         BufferedWriter bfw = new BufferedWriter(new FileWriter(sellerFile));
         String storesStr = String.join(";", storesList);
@@ -237,7 +241,7 @@ public class CSVWriter {
     }
 
     public void writeProductName(int index, String newName) throws IOException {
-        
+
         List<String> allLines = csvReader.readAllLines(storeFile);
         BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
 
@@ -260,7 +264,7 @@ public class CSVWriter {
     }
 
     public void writeProductAmount(int index, Integer newAmount) throws IOException {
-        
+
         List<String> allLines = csvReader.readAllLines(storeFile);
         BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
         String amountStr = String.valueOf(newAmount);
@@ -283,7 +287,7 @@ public class CSVWriter {
     }
 
     public void writeProductPrice(int index, Double newPrice) throws IOException {
-        
+
         List<String> allLines = csvReader.readAllLines(storeFile);
         BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
         String priceStr = String.valueOf(newPrice);
@@ -306,7 +310,7 @@ public class CSVWriter {
     }
 
     public void writeNewProduct(Store store, String name, String amount, String price) throws IOException {
-        
+
         List<String> allLines = csvReader.readAllLines(storeFile);
         BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
 
@@ -334,7 +338,7 @@ public class CSVWriter {
     }
 
     public void updateProduct(Store store, int index) throws IOException {
-        
+
         List<String> allLines = csvReader.readAllLines(storeFile);
         BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
 
@@ -421,7 +425,7 @@ public class CSVWriter {
 
     public void writeNewAccount(User newUser) throws IOException {
         BufferedWriter bfw;
-        
+
         if (newUser instanceof Customer) {
             bfw = new BufferedWriter(new FileWriter(customerFile, true));
             String newCustomer = newUser.getUsername() + ","
