@@ -62,9 +62,10 @@ public class ServerThread extends Thread {
     private ServerSocket serverSocket;
     private Socket clientSocket;
 
-    public ServerThread(ServerSocket serverSocket, Socket clientSocket) {
+    public ServerThread(ServerSocket serverSocket, Socket clientSocket, DataManager datamanager) {
         this.serverSocket = serverSocket;
         this.clientSocket = clientSocket;
+        this.dataManager = dataManager;
     }
 
     public void run() {
@@ -74,8 +75,7 @@ public class ServerThread extends Thread {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
             System.out.println("Serverthread initiated");
-
-            dataManager = new DataManager();
+            
 
             //****************
             while(true)
@@ -122,7 +122,12 @@ public class ServerThread extends Thread {
                     currentAccount = null;
                     currentStore = null;
                 } else if(actions.get(0).equals(CONTACT_USER_CODE)) {
-                    //print list of users that can be contacted
+                    if(actions.size()<=1) {
+                        //print list of users or stores that can be contacted
+                    } else {
+                        //open up message log between current user and the target user
+                        dataManager.getUser(actions.get(1));
+                    }
                 } else if(actions.get(0).equals(BLOCK_USER_CODE)) {
                     //print list of users that can be blocked
                 } else if(actions.get(0).equals(SET_INVISIBLE_CODE)) {
