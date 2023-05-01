@@ -42,7 +42,7 @@ public class Client {
             BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter pw = new PrintWriter(socket.getOutputStream());
             
-            LoginGUI gui = new LoginGUI();
+            LoginGUI gui = new LoginGUI(socket);
             gui.run();
 
             System.out.println("What do you want to send to the server?");
