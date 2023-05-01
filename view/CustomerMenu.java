@@ -199,8 +199,8 @@ public class CustomerMenu extends Menu {
         JButton viewBlockList = new JButton(BLOCK_LIST);
         JButton viewInvisibleList = new JButton(INVISIBLE_LIST);
         JButton viewAllStores = new JButton(VIEW_ALL_STORES);
-        JButton exportFileButton = new JButton(EXPORT_FILE);
         JButton logOutButton = new JButton(LOG_OUT);
+        JButton exportFileButton = new JButton(EXPORT_FILE);
         bottomPanel.add(viewAllStores);
         bottomPanel.add(viewBlockList);
         bottomPanel.add(viewInvisibleList);
@@ -221,12 +221,11 @@ public class CustomerMenu extends Menu {
             }
         });
 
-        //Implement here
         exportFileButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 try{
 
-                } catch (IOException e) {
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
