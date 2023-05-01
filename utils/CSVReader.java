@@ -1,9 +1,12 @@
 package utils;
 
 import core.*;
-import view.Login;
 
 import java.io.*;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.*;
 
 public class CSVReader {
@@ -11,6 +14,7 @@ public class CSVReader {
     public static Map<String, Customer> customerMap = new HashMap<>();
     public static Map<String, Store> storeMap = new HashMap<>();
     public static Map<String, Seller> sellerMap = new HashMap<>();
+    public static Map<User, ConversationHistory> historyMap = new HashMap<>();
 
     public String getFilenames(String user, String other) {
         String csvFilename = "./src/" + user + "&&" + other + ".csv"; // add "./src/" just for running it, this is my path in Intellij
@@ -108,6 +112,16 @@ public class CSVReader {
         bfr.close();
 
         return sellerMap;
+    }
+
+    public Map<String, User> getUserMap() throws IOException {
+        customerMap = readCustomers();
+        sellerMap = readSellers();
+        Map<String, User> userMap = new HashMap<>();
+        userMap.putAll(customerMap);
+        userMap.putAll(sellerMap);
+
+        return userMap;
     }
 
 
@@ -277,4 +291,91 @@ public class CSVReader {
         return messageList;
     }
 
+    public ConversationHistory readConversationHis(User user, List<String> conFilenames) throws IOException {
+        ConversationHistory conversationHis = null;
+        conFilenames = readConFilenames(user);
+        List<Message> conversationList = new ArrayList<>();
+        for (String filename : conFilenames) {
+            BufferedReader bfr = new BufferedReader(new FileReader(filename));
+            String line;
+            bfr.readLine(); // escape the header
+
+            while ((line = bfr.readLine()) != null) {
+                String[] attr = line.split(",");
+                String time = attr[0];
+                String sender = attr[1];
+                String content = attr[2].replaceAll("_", ",");
+                Message message = new Message(sender, content, time);
+                conversationList.add(message);
+
+                // instance ConversationHistory
+                conversationHis = new ConversationHistory(conversationList, filename);
+            }
+        }
+
+        return conversationHis;
+    }
+
+    public List<String> readConFilenames(User user) throws IOException {
+        String filename;
+        BufferedReader bfr;
+        String line;
+        List<String> allFileList = new ArrayList<>();
+
+        if (user instanceof Customer) {
+            filename = "./src/" + "customers" + ".csv";
+            bfr = new BufferedReader(new FileReader(filename));
+            bfr.readLine(); // escape the header
+
+            while ((line = bfr.readLine()) != null) {
+                String[] attr = line.split(",");
+                String filenames = attr[2];
+                String[] allFiles = filenames.split(";");
+                allFileList = Arrays.asList(allFiles);
+
+            }
+        } else if (user instanceof Seller) {
+            filename = "./src/" + "sellers" + ".csv";
+            bfr = new BufferedReader(new FileReader(filename));
+            bfr.readLine(); // escape the header
+
+            while ((line = bfr.readLine()) != null) {
+                String[] attr = line.split(",");
+                String filenames = attr[2];
+                String[] allFiles = filenames.split(";");
+                allFileList = Arrays.asList(allFiles);
+
+            }
+        }
+
+        return allFileList;
+    }
+
+    public Map<User, ConversationHistory> returnHistoryMap() throws IOException {
+
+        Map<String, User> userMap = getUserMap();
+        Map<User, ConversationHistory> historyMap = new HashMap<>();
+        for (User user : userMap.values()) {
+            List<String> conFilenames = readConFilenames(user);
+            ConversationHistory conversationHis = readConversationHis(user, conFilenames);
+            historyMap.put(user, conversationHis);
+        }
+        return historyMap;
+    }
+
+
+
+    public Timestamp getTimestamp(String timestampStr) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Timestamp timestamp = null;
+
+        try {
+            Date date = dateFormat.parse(timestampStr);
+            timestamp = new Timestamp(date.getTime());
+        } catch (ParseException e) {
+            System.err.println("Invalid parsing date string.");
+        }
+        return timestamp;
+
+    }
 }
