@@ -2,7 +2,7 @@
 
 ## Instruction
 
-### Welcome to our message sending application! Our app allows users to create an account and choose a role as either a customer or a seller.
+### Welcome to our message sending application! Our app allows users to create an account and choose a role as either a customer or a seller. It helps sellers and customers trade better in the marketplace.
 
 ### To run our OOP project written in Java, you will need to use an IDE that supports Java. Once you have opened the project in your IDE, you can begin by creating a user account by instantiating a User object.
 
@@ -15,19 +15,19 @@ Tingyu Yin - Submitted Report on Brightspace. Srinath Dantu - Submitted Vocareum
 
 1. **Core (Entity)**
 
-  - **User**: *User* is a super class for both *Sellers* and *Customers* in a marketplace system. Each user is identified by an email and a password, and can have either a seller or customer role. The class contains methods to authenticate a user's password, edit their account information, delete their account. The class HashMap to ensure user's uniqueness.
+  - **User**: *User* is a super class for both *Seller* and *Customer* in a marketplace system. By doing so, not only sellers and customers can share the basic function of user, like having username, password, block list...etc, but also we can ensure sellers and customers perform some of their special actions in *Seller* and *Customer* class. To be specific, only seller can set stores. And it ensures the same type of user cannot send messages to each other. Each user is identified by a unique username and a password, and it has a HashMap to ensure user's uniqueness. User can have either a seller or customer role. The class contains methods to authenticate a user's password, edit their account information, delete their account. Put all the user in a HashMap also help us to manager all the data of users and better interact with other parts of code.
 
   - **Customer**: *Customer* extends the *User* class and represents a customer in a messaging and marketplace system.
 
   - **Seller**: *Seller* extends the *User* class and represents a seller in a messaging and marketplace system. The class includes fields for the seller's stores.
 
-  - **Store**: The class includes fields for the store's name, product, price, and amount available, as well as a reference to the seller who owns the store. The class provides methods for getting and setting the store's name, product, price, and amount available, as well as getting and setting the seller who owns the store. Furthermore, it provides methods for managing stores which include adding, deleting, and editing stores.
+  - **Store**: The class includes fields for the store's name, product, price, and amount available, as well as a reference to the seller who owns the store. The class provides methods for getting and setting the store's name, product, price, and amount available, as well as getting and setting the seller who owns the store. Furthermore, it provides methods for managing stores which include adding, deleting, and editing stores. It has a HashMap use store'a name as a key.
 
   - **Message**: The class includes fields for the message's sender, recipient, content, and timestamp. The constructor for this class takes a sender, recipient, and content, and automatically generates a timestamp for the message based on the current date and time. The class provides methods for getting and setting the sender, recipient, content, and timestamp fields.
 
 2. **View (GUI)**
 
-  - **LoginGUI**: This class implements the ActionListener interface. It includes final fields for several messages, two panels (loginPanel and signUpPanel), labels and text fields for username and password, and buttons for login and registration. It also includes methods for opening the customer and seller menus, and a run() method that creates a JFrame and sets up the card layout and components for the login panel. The actionPerformed() method checks the user's credentials, creates a new account window, or shows an error message depending on the user's input. The createAccountWindow() method sets up a JFrame and components for the registration panel and writes the new user's information to a CSV file.
+  - **LoginGUI**: This class implements the ActionListener interface. It includes final fields for several messages, two panels (loginPanel and signUpPanel), labels and text fields for username and password, and buttons for login and registration. It also includes methods for opening the customer and seller menus, and a run() method that creates a JFrame and sets up the card layout and components for the login panel. The actionPerformed() method checks the user's credentials, creates a new account window, or shows an error message depending on the user's input. The createAccountWindow() method sets up a JFrame and components for the registration panel and writes the new user's information to a CSV file. And when user creating a new account, if the username has been taken, it will display a warning. We also ensure that username won't include invalid symbols like ";&," which may influence read and write csv files.
   
   - **Menu**: This class only contain final fields for messages that are used both in *SellerMenu* and *CustomerMenu*.
   
