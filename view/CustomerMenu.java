@@ -222,7 +222,7 @@ public class CustomerMenu extends Menu {
         });
 
         //Implement here
-        exportFileButton.addActionListener(new ActionListener()) {
+        exportFileButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 try{
 
@@ -230,7 +230,7 @@ public class CustomerMenu extends Menu {
                     throw new RuntimeException(e);
                 }
             }
-        }
+        });
 
         viewBlockList.addActionListener(new ActionListener() {
             @Override
