@@ -26,6 +26,7 @@ import java.util.Map;
 public class CustomerMenu extends Menu {
 
     private static final String VIEW_ALL_STORES = "View all the stores";
+    private static final String EXPORT_FILE = "Export File";
 
     public String message;
     private String filename = "./src/customers.csv";
@@ -198,10 +199,12 @@ public class CustomerMenu extends Menu {
         JButton viewBlockList = new JButton(BLOCK_LIST);
         JButton viewInvisibleList = new JButton(INVISIBLE_LIST);
         JButton viewAllStores = new JButton(VIEW_ALL_STORES);
+        JButton exportFileButton = new JButton(EXPORT_FILE);
         JButton logOutButton = new JButton(LOG_OUT);
         bottomPanel.add(viewAllStores);
         bottomPanel.add(viewBlockList);
         bottomPanel.add(viewInvisibleList);
+        bottomPanel.add(exportFileButton);
         bottomPanel.add(logOutButton);
 
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
