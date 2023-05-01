@@ -27,9 +27,9 @@ public class CSVWriter {
     public CSVWriter() {
 
     }
-    private String customerFile = "./src/customers.csv";
-    private String sellerFile = "./src/sellers.csv";
-    private String storeFile = "./src/" + "stores" + ".csv";
+    private String customerFile = "customers.csv";
+    private String sellerFile = "sellers.csv";
+    private String storeFile = "" + "stores" + ".csv";
 
 
     // used when user send a message
@@ -98,11 +98,11 @@ public class CSVWriter {
 
             String header = String.format("%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist");
-            bfw.write(header);
+            bfw.write(header + "\n");
             for (String line : allLines) {
-                bfw.write(line);
-                bfw.newLine();
+                bfw.write(line + "\n");
             }
+            bfw.flush();
             bfw.close();
 
         } else if (user instanceof Seller) {
@@ -129,8 +129,8 @@ public class CSVWriter {
                     "username", "password", "conversation", "blocklist", "invislist", "stores");
             bfw.write(header);
             for (String line : allLines) {
-                bfw.write(line);
-                bfw.newLine();
+                bfw.write(line + "\n");
+                bfw.flush();
             }
             bfw.close();
         }
@@ -180,8 +180,8 @@ public class CSVWriter {
                     "username", "password", "conversation", "blocklist", "invislist");
             bfw.write(header);
             for (String line : allLines) {
-                bfw.write(line);
-                bfw.newLine();
+                bfw.write(line + "\n");
+                bfw.flush();
             }
             bfw.close();
 
@@ -207,8 +207,8 @@ public class CSVWriter {
                     "username", "password", "conversation", "blocklist", "invislist", "stores");
             bfw.write(header);
             for (String line : allLines) {
-                bfw.write(line);
-                bfw.newLine();
+                bfw.write(line + "\n");
+                bfw.flush();
             }
             bfw.close();
         }
@@ -234,8 +234,8 @@ public class CSVWriter {
                 "username", "password", "conversation", "blocklist", "invislist", "stores");
         bfw.write(header);
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line + "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -257,8 +257,8 @@ public class CSVWriter {
                 "storeName", "product-amount-price", "sellerName");
         bfw.write(header);
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line + "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -280,8 +280,8 @@ public class CSVWriter {
                 "storeName", "product-amount-price", "sellerName");
         bfw.write(header);
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line + "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -303,8 +303,8 @@ public class CSVWriter {
                 "storeName", "product-amount-price", "sellerName");
         bfw.write(header);
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line + "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -331,8 +331,8 @@ public class CSVWriter {
                 "storeName", "product-amount-price", "sellerName");
         bfw.write(header);
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line + "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -358,8 +358,8 @@ public class CSVWriter {
                 "storeName", "product-amount-price", "sellerName");
         bfw.write(header);
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line + "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -368,7 +368,7 @@ public class CSVWriter {
     public void writeLatestLogOutTime(Timestamp timestamp, User user) throws IOException {
         String tsp = timestamp.toString();
         if (user instanceof Customer) {
-            String filename = "./src/" + "customers" + ".csv";
+            String filename = "" + "customers" + ".csv";
             BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
             List<String> allLines = csvReader.readAllLines(filename);
 
@@ -389,13 +389,13 @@ public class CSVWriter {
                         "username", "password", "conversation", "blocklist", "invislist");
                 bfw.write(header);
                 for (String line : allLines) {
-                    bfw.write(line);
-                    bfw.newLine();
+                    bfw.write(line + "\n");
+                    bfw.flush();
                 }
             }
 
         } else if (user instanceof Seller) {
-            String filename = "./src/" + "sellers" + ".csv";
+            String filename = "" + "sellers" + ".csv";
             BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
             List<String> allLines = csvReader.readAllLines(filename);
 
@@ -416,8 +416,8 @@ public class CSVWriter {
                         "username", "password", "conversation", "blocklist", "invislist");
                 bfw.write(header);
                 for (String line : allLines) {
-                    bfw.write(line);
-                    bfw.newLine();
+                    bfw.write(line + "\n");
+                    bfw.flush();
                 }
             }
         }
