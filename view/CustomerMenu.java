@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.net.*;
 /**
  * A customer menu
  *
@@ -38,17 +39,17 @@ public class CustomerMenu extends Menu {
     private JPanel invisiblePanel = new JPanel();
     private JPanel blockPanel = new JPanel();
 
+    private Socket socket;
 
 
     public void showCustomerMenu(Customer customer) throws IOException { // this is used when login and when go back
         run(customer);
     }
 
-    public CustomerMenu(Customer customer) { // used when login gui instance the CustomerMenu
+    public CustomerMenu(Customer customer, Socket socket) { // used when login gui instance the CustomerMenu
         this.customer = customer;
         this.csvReader = new CSVReader();
-
-
+        this.socket = socket;
     }
 
     public void openViewStoresWindow(Customer customer) throws IOException { // to open view all the stores GUI
@@ -77,7 +78,7 @@ public class CustomerMenu extends Menu {
         invisList = csvReader.getInvisList(customer); // load all the invisible users
 
         JFrame frame = new JFrame("Customer Menu");
-        frame.setSize(new Dimension(500, 600));
+        frame.setSize(new Dimension(600, 600));
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setLayout(new BorderLayout());
