@@ -17,15 +17,15 @@ public class CSVReader {
     public static Map<User, ConversationHistory> historyMap = new HashMap<>();
 
     // this is my path, you can change
-    private String sellerCSV = "./src/sellers.csv";
+    private String sellerCSV = "sellers.csv";
 
-    private String customerCSV = "./src/customers.csv";
+    private String customerCSV = "customers.csv";
 
-    private String storeCSV = "./src/stores.csv";
+    private String storeCSV = "stores.csv";
 
     public String getFilenames(String user, String other) {
         // add "./src/" just for running it, this is my path in Intellij
-        String csvFilename = "./src/" + user + "&&" + other + ".csv";
+        String csvFilename = "" + user + "&&" + other + ".csv";
         return csvFilename;                                         //  you can change the path
     }
 
@@ -303,20 +303,23 @@ public class CSVReader {
         List<Message> conversationList = new ArrayList<>();
 
         for (String filename : conFilenames) {
-            BufferedReader bfr = new BufferedReader(new FileReader(filename));
-            String line;
-            bfr.readLine(); // escape the header
-
-            while ((line = bfr.readLine()) != null) {
-                String[] attr = line.split(",");
-                String time = attr[0];
-                String sender = attr[1];
-                String content = attr[2].replaceAll("_", ",");
-                Message message = new Message(sender, content, time);
-                conversationList.add(message);
-
-                // instance ConversationHistory
-                conversationHis = new ConversationHistory(conversationList, filename);
+            if(!filename.equals("..."))
+            {
+                BufferedReader bfr = new BufferedReader(new FileReader(filename));
+                String line;
+                bfr.readLine(); // escape the header
+    
+                while ((line = bfr.readLine()) != null) {
+                    String[] attr = line.split(",");
+                    String time = attr[0];
+                    String sender = attr[1];
+                    String content = attr[2].replaceAll("_", ",");
+                    Message message = new Message(sender, content, time);
+                    conversationList.add(message);
+    
+                    // instance ConversationHistory
+                    conversationHis = new ConversationHistory(conversationList, filename);
+                }
             }
         }
 
