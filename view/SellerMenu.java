@@ -37,7 +37,7 @@ public class SellerMenu extends Menu {
     public Seller seller;
     public List<String> blockList;
     public List<String> invisList;
-    public List<String> sellerList = new ArrayList<>();
+    public List<String> customerList = new ArrayList<>();
     public List<Store> sellerStore;
     private JPanel invisiblePanel = new JPanel();
     private JPanel blockPanel = new JPanel();
@@ -84,8 +84,14 @@ public class SellerMenu extends Menu {
         sellerStore = seller.getStores();
         Map<String, Customer> customerMap = csvReader.readCustomers();
 
+        // check other side's invisible list
         for (String customer : customerMap.keySet()) {
-            sellerList.add(customer);
+            customerList.add(customer);
+            Customer cus = customerMap.get(customer);
+            List<String> otherSide = csvReader.getInvisList(cus);
+            if (otherSide.contains(seller.getUsername())) {
+                customerList.remove(customer);
+            }
         }
 
         blockList = csvReader.getBlockList(seller); // load all the blocked users
@@ -145,7 +151,7 @@ public class SellerMenu extends Menu {
         JPanel friendPanel = new JPanel();
         friendPanel.setLayout(new BoxLayout(friendPanel, BoxLayout.Y_AXIS));
 
-        for (String friend : sellerList) {
+        for (String friend : customerList) {
 
             JPanel singleFriendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JLabel friendLabel = new JLabel(friend);
