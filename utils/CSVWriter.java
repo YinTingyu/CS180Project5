@@ -236,7 +236,7 @@ public class CSVWriter {
         }
 
         // rewrite everything
-        String header = String.format("%s,%s-%s-%s,%s",
+        String header = String.format("%s,%s,%s",
                 "storeName", "product-amount-price", "sellerName");
         bfw.write(header + "\n");
 
@@ -261,7 +261,7 @@ public class CSVWriter {
 
         BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
         // rewrite everything
-        String header = String.format("%s,%s-%s-%s,%s",
+        String header = String.format("%s,%s,%s",
                 "storeName", "product-amount-price", "sellerName");
         bfw.write(header + "\n");
 
@@ -285,7 +285,7 @@ public class CSVWriter {
         }
 
         // rewrite everything
-        String header = String.format("%s,%s-%s-%s,%s",
+        String header = String.format("%s,%s,%s",
                 "storeName", "product-amount-price", "sellerName");
         bfw.write(header + "\n");
 
@@ -343,7 +343,7 @@ public class CSVWriter {
 
         BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
         // rewrite everything
-        String header = String.format("%s,%s-%s-%s,%s",
+        String header = String.format("%s,%s,%s",
                 "storeName", "product-amount-price", "sellerName");
         bfw.write(header + "\n");
 
