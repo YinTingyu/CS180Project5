@@ -59,7 +59,19 @@ public class ViewStoresWindow {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
+        Map<String, Store> visibleStoreMap = new HashMap<>();
         for (Store store : storeMap.values()) {
+
+            // have to tell whether the seller has been invisible to the customer
+            List<String> sellerInvisList = reader.getInvisList(store.getSeller());
+            boolean invisible = sellerInvisList.contains(customer.getUsername());
+            if (!invisible) {
+                visibleStoreMap.put(store.getStoreName(), store);
+            }
+
+        }
+
+        for (Store store : visibleStoreMap.values()) {
             String storeName = store.getStoreName();
             String storeSeller = store.getSeller().getUsername();
 
@@ -70,13 +82,7 @@ public class ViewStoresWindow {
 
             labelPanel.add(new JLabel("Store Name: " + storeName));
             labelPanel.add(new JLabel(" | "));
-
-            // have to tell whether the seller has been invisible to the customer
-            List<String> sellerInvisList = reader.getInvisList(store.getSeller());
-            boolean invisible = sellerInvisList.contains(customer.getUsername());
-            if (!invisible) {
-                labelPanel.add(new JLabel("Seller: " + storeSeller));
-            }
+            labelPanel.add(new JLabel("Seller: " + storeSeller));
 
             JButton sendMessageButton = new JButton("Send Message");
             labelPanel.add(sendMessageButton);
