@@ -213,8 +213,12 @@ public class CustomerSMGWindow {
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         labelPanel.add(new JLabel("Store Name: " + store.getStoreName()));
-        labelPanel.add(new JLabel(" | "));
-        labelPanel.add(new JLabel("Seller: " + store.getSeller().getUsername()));
+        List<String> other = reader.getInvisList(store.getSeller());
+        if (!other.contains(customer.getUsername())) {
+            labelPanel.add(new JLabel(" | "));
+            labelPanel.add(new JLabel("Seller: " + store.getSeller().getUsername()));
+        }
+        
         frame.add(labelPanel, BorderLayout.NORTH);
 
         conversationPanel.setLayout(new BoxLayout(conversationPanel, BoxLayout.Y_AXIS));
