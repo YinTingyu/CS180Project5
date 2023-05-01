@@ -73,4 +73,19 @@ public class User {
         conFilenames = list;
     }
 
+    public HashMap<User, ConversationHistory> getConversations() {
+        return conversations;
+    }
+
+    public List<String> getBlockList() {
+        return blockList;
+    }
+
+    public List<String> getInvisList() {
+        return invisList;
+    }
+
+    public List<String> getConFilenames() {
+        return conFilenames;
+    }
 }
