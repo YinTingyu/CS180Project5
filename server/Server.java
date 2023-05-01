@@ -1,10 +1,15 @@
-package core;
+package server;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import core.Customer;
+import core.Seller;
+import core.Store;
+import core.User;
 
 /**
  * This class is the server that will interact with the client
