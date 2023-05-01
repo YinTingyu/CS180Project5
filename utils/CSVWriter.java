@@ -27,9 +27,9 @@ public class CSVWriter {
     public CSVWriter() {
 
     }
-    private String customerFile = "./src/customers.csv";
-    private String sellerFile = "./src/sellers.csv";
-    private String storeFile = "./src/" + "stores" + ".csv";
+    private String customerFile = "customers.csv";
+    private String sellerFile = "sellers.csv";
+    private String storeFile = "" + "stores" + ".csv";
 
 
     // used when user send a message
@@ -46,8 +46,8 @@ public class CSVWriter {
         String contentToWrite = attr[2].replaceAll(",", "_");
         String formattedMessage = String.format("%s,%s,%s\n",
                 timestamp, username, contentToWrite);
-        writer.write(formattedMessage);
-
+        writer.write(formattedMessage + "\n");
+        writer.flush();
         writer.close();
 
     }
@@ -58,14 +58,15 @@ public class CSVWriter {
 
         BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
         String header = String.format("%s,%s,%s", "timestamp", "username", "message");
-        bfw.write(header);
+        bfw.write(header + "\n");
 
         for (String message : newMessages) { // remember deal with comma
             String[] attr = message.split("& . _ . &");
             attr[2] = attr[2].replaceAll(",", "_"); // replace all the "," to "_" in content
             String noCommaMessage = String.join(",", attr);
-            bfw.write(noCommaMessage);
+            bfw.write(noCommaMessage + "\n");
         }
+        bfw.flush();
         bfw.close();
     }
 
@@ -98,10 +99,10 @@ public class CSVWriter {
 
             String header = String.format("%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist");
-            bfw.write(header);
+            bfw.write(header + "\n");
             for (String line : allLines) {
-                bfw.write(line);
-                bfw.newLine();
+                bfw.write(line + "\n");
+                bfw.flush();
             }
             bfw.close();
 
@@ -127,10 +128,10 @@ public class CSVWriter {
 
             String header = String.format("%s,%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist", "stores");
-            bfw.write(header);
+            bfw.write(header + "\n");
             for (String line : allLines) {
-                bfw.write(line);
-                bfw.newLine();
+                bfw.write(line + "\n");
+                bfw.flush();
             }
             bfw.close();
         }
@@ -178,10 +179,10 @@ public class CSVWriter {
 
             String header = String.format("%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist");
-            bfw.write(header);
+            bfw.write(header + "\n");
             for (String line : allLines) {
-                bfw.write(line);
-                bfw.newLine();
+                bfw.write(line + "\n");
+                bfw.flush();
             }
             bfw.close();
 
@@ -205,10 +206,10 @@ public class CSVWriter {
 
             String header = String.format("%s,%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist", "stores");
-            bfw.write(header);
+            bfw.write(header + "\n");
             for (String line : allLines) {
-                bfw.write(line);
-                bfw.newLine();
+                bfw.write(line + "\n");
+                bfw.flush();
             }
             bfw.close();
         }
@@ -232,10 +233,10 @@ public class CSVWriter {
         }
         String header = String.format("%s,%s,%s,%s,%s,%s",
                 "username", "password", "conversation", "blocklist", "invislist", "stores");
-        bfw.write(header);
+        bfw.write(header + "\n");
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line + "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -255,10 +256,10 @@ public class CSVWriter {
         // rewrite everything
         String header = String.format("%s,%s-%s-%s,%s",
                 "storeName", "product-amount-price", "sellerName");
-        bfw.write(header);
+        bfw.write(header + "\n");
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line + "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -278,10 +279,10 @@ public class CSVWriter {
         // rewrite everything
         String header = String.format("%s,%s-%s-%s,%s",
                 "storeName", "product-amount-price", "sellerName");
-        bfw.write(header);
+        bfw.write(header + "\n");
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line + "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -301,10 +302,10 @@ public class CSVWriter {
         // rewrite everything
         String header = String.format("%s,%s-%s-%s,%s",
                 "storeName", "product-amount-price", "sellerName");
-        bfw.write(header);
+        bfw.write(header + "\n");
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line + "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -329,10 +330,10 @@ public class CSVWriter {
         // rewrite everything
         String header = String.format("%s,%s-%s-%s,%s",
                 "storeName", "product-amount-price", "sellerName");
-        bfw.write(header);
+        bfw.write(header+ "\n");
         for (String line : allLines) {
-            bfw.write(line);
-            bfw.newLine();
+            bfw.write(line+ "\n");
+            bfw.flush();
         }
         bfw.close();
     }
@@ -387,10 +388,10 @@ public class CSVWriter {
 
                 String header = String.format("%s,%s,%s,%s,%s",
                         "username", "password", "conversation", "blocklist", "invislist");
-                bfw.write(header);
+                bfw.write(header + "\n");
                 for (String line : allLines) {
-                    bfw.write(line);
-                    bfw.newLine();
+                    bfw.write(line + "\n");
+                    bfw.flush();
                 }
             }
 
@@ -414,10 +415,10 @@ public class CSVWriter {
 
                 String header = String.format("%s,%s,%s,%s,%s",
                         "username", "password", "conversation", "blocklist", "invislist");
-                bfw.write(header);
+                bfw.write(header + "\n");
                 for (String line : allLines) {
-                    bfw.write(line);
-                    bfw.newLine();
+                    bfw.write(line+ "\n");
+                    bfw.flush();
                 }
             }
         }
@@ -430,13 +431,15 @@ public class CSVWriter {
             bfw = new BufferedWriter(new FileWriter(customerFile, true));
             String newCustomer = newUser.getUsername() + ","
                     + newUser.getPassword() + ",...,...,...";
-            bfw.write(newCustomer);
+            bfw.write(newCustomer + "\n");
+            bfw.flush();
 
         } else if (newUser instanceof Seller) {
             bfw = new BufferedWriter(new FileWriter(sellerFile, true));
             String newSeller = newUser.getUsername() + ","
                     + newUser.getPassword() + ",...,...,...";
-            bfw.write(newSeller);
+            bfw.write(newSeller + "\n");
+            bfw.flush();
         }
     }
 }
