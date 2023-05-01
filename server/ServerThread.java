@@ -1,4 +1,4 @@
-package core;
+package server;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -6,7 +6,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.lang.model.util.ElementScanner14;
+import core.ConversationHistory;
+import core.Customer;
+import core.Seller;
+import core.Store;
+import core.User;
 
 /**
  * This class is the server thread that will kick off each time a client is connected
@@ -25,6 +29,8 @@ public class ServerThread extends Thread {
     private static final String EXIT_FIRST_MENU_OPTION_CODE = "AA03";
 
     private static final String CONFIRMATION_CODE = "OKAY";
+    private static final String REJECTION_CODE = "NOT OKAY";
+    private static final String FULL_EXIT_CODE = "FULL EXIT";
     private static final String CUSTOMER_TYPE = "Customer";
     private static final String SELLER_TYPE = "Seller";
 
@@ -36,7 +42,9 @@ public class ServerThread extends Thread {
     private static String sellersFileName = "sellers.csv";
     private static HashMap<User, String> tempBlocked;
     private static HashMap<User, String> tempInvis;
+
     private static User currentAccount;
+
     private static Store currentStore;
     private static ArrayList<ServerThread> serverThreads;
 
@@ -68,7 +76,7 @@ public class ServerThread extends Thread {
                 sellers = createSellers("sellers.csv");
                 stores = createStores(sellers);
         
-                refreshUsers(tempBlocked, tempInvis);
+                //refreshUsers(tempBlocked, tempInvis);
 
                 String firstAction = in.readLine(); //determineAccountActionType(in);
 
@@ -77,7 +85,8 @@ public class ServerThread extends Thread {
                     createNewAccount(in, out);
                 } else if(firstAction.equals(LOG_IN_OPTION_CODE))//user is logging in
                 {
-                    if(logIn(in))//log in success
+                    /*
+                     * if(logIn(in))//log in success
                     {
                         while(true)
                         {
@@ -151,6 +160,7 @@ public class ServerThread extends Thread {
                         }
                     }
                     else {} //do nothing if log in fails
+                     */
                 } else if(firstAction.equals(EXIT_FIRST_MENU_OPTION_CODE))//user is ending the program
                 {
                     //System.out.println(MESSAGE_GOODBYE);
@@ -174,18 +184,14 @@ public class ServerThread extends Thread {
                 do {
                     //receive user's account name
                     name = in.readLine();
-                    if(name.contains(","))
-                    {
+                    if(name.contains(",")) {
                         //implement later
-                        //System.out.println(MESSAGE_INVALID_ACCOUNT_NAME);
-                    } else if(name.contains(" "))
-                    {
-                        //System.out.println(MESSAGE_INVALID_ACCOUNT_NAME);
-                    }else if(checkForDuplicates(name))
-                    {
-                        //System.out.println(MESSAGE_DUPLICATE_ACCOUNT_NAME);
-                    } else
-                    {
+                        sendRejection(out);
+                    } else if(name.contains(" ")) {
+                        sendRejection(out);
+                    }else if(checkForDuplicates(name)) {
+                        sendRejection(out);
+                    } else {
                         sendConfirmation(out);
                         done = true;
                     }
@@ -207,12 +213,12 @@ public class ServerThread extends Thread {
                 if(accountType.equals(CUSTOMER_TYPE)) {
                     Customer newCustomer = new Customer(name, password);
                     customers.add(newCustomer);
-                    writeAccountToFile(newCustomer, customersFileName);
+                    //writeAccountToFile(newCustomer, customersFileName);
                     return;
                 } else {
                     Seller newSeller = new Seller(name, password);
                     sellers.add(newSeller);
-                    writeAccountToFile(newSeller, sellersFileName);
+                    //writeAccountToFile(newSeller, sellersFileName);
                     return;
                 }
             }
@@ -221,29 +227,126 @@ public class ServerThread extends Thread {
         }
     }
 
+    //this needs to be worked on
     private static int determineAccountActionType(BufferedReader in)
     {
-        while(true)
-        {
-            System.out.println(PROMPT_ACCOUNT_ACTION);
-            String input = in.nextLine();
-            int type;
-            try
+        try {
+            while(true)
             {
-                type = Integer.parseInt(input);
-                switch(type)
+                //client prompts for action
+                String input = in.readLine();
+                int type;
+                try
                 {
-                    case 1: case 2: case 3:
-                    return type;
-                    default:
-                        System.out.println(MESSAGE_ERROR_ACCOUNT_ACTION_TYPE);
+                    type = Integer.parseInt(input);
+                    switch(type)
+                    {
+                        case 1: case 2: case 3:
+                        return type;
+                        default:
+                            //System.out.println(MESSAGE_ERROR_ACCOUNT_ACTION_TYPE);
+                            //message wrong action type
+                    }
+                } catch(NumberFormatException e)
+                {
+                    //no such action
                 }
-            } catch(NumberFormatException e)
-            {
-                System.out.println(MESSAGE_ERROR_ACCOUNT_ACTION_TYPE);
             }
+        } catch (Exception e) {
+
+        }
+        return -1;
+    }
+
+    //work on this!!
+    private static boolean logIn(BufferedReader in, PrintWriter out) throws IOException //any parameters that are needed
+    {
+        //This method eventually needs to set the currentUser field to the account that was logged into
+
+        int accountType;
+        int index;
+        //while(true) //prompt username
+        {
+            //client should prompt the user for the username
+            String name = in.readLine();
+            accountType = 1;
+            //read in name and check the database for account with said username
+            /* 
+            accountType = determineAccountType(name);
+            if(accountType == -1)
+            {
+                out.println(REJECTION_CODE);
+            } else
+            {
+                //index = getIndexOfAccount(name, accountType); //grab account from database
+                out.println(CONFIRMATION_CODE);
+                break;
+            }
+            */
+        }
+        
+        //password verification
+        if(accountType == 1)
+        {
+            int counter = 0;
+            while(true) { //prompt customer password
+                //client prompt for password
+                String passwordAttempt = in.readLine();
+                //authenticate password
+                index = 0;
+                if(!customers.get(index).authenticate(passwordAttempt)) {
+                    //notify invalid password
+                    sendRejection(out);
+                } else {
+                    //notify logged in status
+                    sendConfirmation(out);
+                    System.out.println("Logged in as: " + customers.get(index).getUsername());
+                    currentAccount = customers.get(index);
+                    return true;
+                }
+
+                counter++;
+                if(counter > 3) {
+                    sendExit(out);
+                    break;
+                }
+
+            }
+            return false;
+        } else
+        {
+            int counter = 0;
+            while(true) { //prompt password for seller
+                //client prompt password
+                String password = in.readLine();
+
+                //CHANGE THIS LATER
+                index = 1;
+                if(!sellers.get(index).authenticate(password)) {
+                    sendRejection(out);
+                } else {
+                    sendConfirmation(out);
+                    System.out.println("Logged in as: " + sellers.get(index).getUsername());
+                    currentAccount = sellers.get(index);
+                    return true;
+                }
+
+                counter++;
+                if(counter > 3) {
+                    sendExit(out);
+                    break;
+                }
+            }
+            return false;
         }
     }
+    
+
+    private static void logOut()
+    {
+        currentAccount = null;
+    }
+
 
     //this is a utility method that will attempt to cast a string to an integer. If unsuccessful, it will return a -1
     private static int castToInt(String str) {
@@ -297,7 +400,8 @@ public class ServerThread extends Thread {
         }
     }
 
-    private static void writeAccountToFile(User account, String filename)
+    /*
+     * private static void writeAccountToFile(User account, String filename)
     {
         try
         {
@@ -322,6 +426,8 @@ public class ServerThread extends Thread {
             e.printStackTrace();
         }
     }
+     */
+    
 
 
     private static ArrayList<Customer> createCustomers(String filename) //create arraylist of customers, ignores blocked and invisLists
@@ -349,7 +455,7 @@ public class ServerThread extends Thread {
                     HashMap<String, ConversationHistory> userConversations = new HashMap<String, ConversationHistory>();
                     if(conversationCSVs != null && conversationCSVs.size() >= 1)
                     {
-                        userConversations = constructConversations(conversationCSVs, "Customer");
+                        userConversations = null; //constructConversations(conversationCSVs, "Customer");
                     } else
                     {
                         userConversations = null;
@@ -427,8 +533,8 @@ public class ServerThread extends Thread {
         return stores;
     }
 
-
-    private static void refreshUsers(HashMap<User, String> tempBlocked, HashMap<User, String> tempInvis)
+    /*
+     *     private static void refreshUsers(HashMap<User, String> tempBlocked, HashMap<User, String> tempInvis)
     {
         for(Customer c: customers)
         {
@@ -497,6 +603,24 @@ public class ServerThread extends Thread {
         }
     }
 
+     */
+
+    //edit this later
+    private static int determineAccountType(String name) //1 - customer type; 2 - seller type
+    {
+        for(User e: customers) //looks through the customer arraylist
+        {
+            if(e.getUsername().equals(name))
+                return 1;
+        }
+        for(User e: sellers) //looks through the seller array list
+        {
+            if(e.getUsername().equals(name))
+                return 2;
+        }
+        return -1;
+    }
+
 
     private static ArrayList<String> parseStrings(String bigString) //this method will return a list of strings given a bigString
     {
@@ -546,9 +670,16 @@ public class ServerThread extends Thread {
     }
 
     //utility method to send the confirmation
-    private static void sendConfirmation(PrintWriter out)
-    {
+    private static void sendConfirmation(PrintWriter out) {
         out.println(CONFIRMATION_CODE);
+    }
+
+    private static void sendRejection(PrintWriter out) {
+        out.println(REJECTION_CODE);
+    }
+
+    private static void sendExit(PrintWriter out) {
+        out.println(FULL_EXIT_CODE);
     }
 
     private static boolean checkForDuplicates(String name) //return true if an account with that name exists already
