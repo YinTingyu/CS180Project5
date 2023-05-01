@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import utils.DataManager;
 
 import core.Customer;
 import core.Seller;
@@ -34,10 +35,7 @@ public class Server{
     private static String sellersFileName = "sellers.csv";
     private static HashMap<User, String> tempBlocked;
     private static HashMap<User, String> tempInvis;
-    private static User currentAccount;
-    private static Store currentStore;
     private static ArrayList<ServerThread> serverThreads;
-    private static ArrayList<Integer> usedPorts;
 
     public static void main(String [] args) {
         
@@ -49,6 +47,7 @@ public class Server{
 
         serverThreads = new ArrayList<ServerThread>();
         try {
+            DataManager dataManager = new DataManager();
             ServerSocket serverSocket = new ServerSocket(5555);
             while(true)
             {
@@ -57,7 +56,7 @@ public class Server{
                 Socket socket = serverSocket.accept();
                 System.out.println("Client connected!");
 
-                ServerThread temp = new ServerThread(serverSocket, socket);
+                ServerThread temp = new ServerThread(serverSocket, socket, dataManager);
                 serverThreads.add(temp);
                 temp.start();
             }
@@ -119,17 +118,6 @@ public class Server{
         {
             e.printStackTrace();
         }
-    }
-
-    private static Integer getSmallestAvailablePort()
-    {
-        for(Integer i = 1000; i < 9999; i++)
-        {
-            if(!usedPorts.contains(i))
-                return i;
-        }
-
-        return null;
     }
 
 }
