@@ -1,7 +1,7 @@
 package view;
 
 import core.Customer;
-import core.Seller;
+import core.Store;
 import utils.CSVReader;
 import utils.CSVWriter;
 
@@ -9,374 +9,279 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 /**
- * A customer menu
+ * Customer's send message interface
  *
  * <p>Purdue University -- CS18000 -- Spring 2023 -- project 5
  *
  * @author Tingyu Yin
  * @version April 15, 2023
  */
-public class CustomerMenu extends Menu {
+public class CustomerSMGWindow {
+    private CustomerMenu customerMenu;
+    private Store store;
+    private Customer customer;
+    static JTextField inputMessage;
 
-    private static final String VIEW_ALL_STORES = "View all the stores";
+    List<String> messages = new ArrayList<>();
 
-    public String message;
-    private String filename = "./src/customers.csv";
-    private CSVReader csvReader;
-    public Customer customer;
-    public List<String> blockList;
-    public List<String> invisList;
-    public List<String> sellerList = new ArrayList<>();
-    private JPanel invisiblePanel = new JPanel();
-    private JPanel blockPanel = new JPanel();
-
-
-
-    public void showCustomerMenu(Customer customer) throws IOException { // this is used when login and when go back
-        run(customer);
-    }
-
-    public CustomerMenu(Customer customer) { // used when login gui instance the CustomerMenu
+    private JPanel conversationPanel = new JPanel();
+    public CustomerSMGWindow(CustomerMenu customerMenu, Store store, Customer customer) {
+        this.customerMenu = customerMenu;
+        this.store = store;
         this.customer = customer;
-        this.csvReader = new CSVReader();
+    }
 
+    private void updateConversation(List<String> messages) throws IOException {
+
+        //// Clear the existing conversation panel
+        conversationPanel.removeAll();
+        CSVReader reader = new CSVReader();
+        CSVWriter writer = new CSVWriter(customer);
+        String filename = reader.getFilenames(customer.getUsername(), store.getStoreName());
+        String otherFilename = reader.getFilenames(store.getSeller().getUsername(), customer.getUsername());
+
+
+        for (String message : messages) {
+
+            String[] msgInfo = message.split("& . _ . &");
+
+            // use labels to hold sender's name and timestamp
+            JLabel senderLabel = new JLabel(msgInfo[1]);
+            JLabel timestampLabel = new JLabel(msgInfo[0]);
+
+            JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            headerPanel.add(timestampLabel);
+            headerPanel.add(senderLabel);
+
+            JPanel messagePanel = new JPanel(new BorderLayout());
+            JTextArea messageArea = new JTextArea(msgInfo[2]);
+            messageArea.setEditable(false); // can not edit message when show conversations
+            messageArea.setLineWrap(true);
+            messageArea.setWrapStyleWord(true);
+            messageArea.setPreferredSize(new Dimension(400,
+                    messageArea.getPreferredSize().height));
+
+            messagePanel.add(messageArea, BorderLayout.CENTER);
+            messagePanel.add(headerPanel, BorderLayout.NORTH);
+
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            JButton editButton = new JButton("Edit");
+            JButton deleteButton = new JButton("Delete");
+            JButton saveButton = new JButton("Save");
+            saveButton.setVisible(false);
+
+            buttonPanel.add(editButton);
+            buttonPanel.add(deleteButton);
+            buttonPanel.add(saveButton);
+            messagePanel.add(buttonPanel, BorderLayout.EAST);
+            conversationPanel.add(messagePanel);
+
+            editButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+
+                    messageArea.setEditable(true); // message can be edited now
+                    editButton.setVisible(false);
+                    saveButton.setVisible(true); // show save button
+
+                }
+            });
+
+            saveButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    String newMSG = messageArea.getText();
+                    int msgIndex = messages.indexOf(message);
+                    messages.set(msgIndex, newMSG);
+
+                    messageArea.setEditable(false);
+                    editButton.setVisible(true);
+                    saveButton.setVisible(false);
+
+                    try {
+                        updateConversation(messages);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    // (write) update csv file
+                    try {
+                        writer.updateConversationFile(filename, messages);
+                        writer.updateConversationFile(otherFilename, messages);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+            deleteButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    int msgIndex = messages.indexOf(message);
+                    messages.remove(msgIndex);
+
+                    try {
+                        updateConversation(messages);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    // (write) update csv file
+                    try {
+                        writer.updateConversationFile(filename, messages); // only modify who initiate
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        }
+
+        // Refresh the conversation panel
+        conversationPanel.revalidate();
+        conversationPanel.repaint();
 
     }
 
-    public void openViewStoresWindow(Customer customer) throws IOException { // to open view all the stores GUI
-        ViewStoresWindow storesWindow = new ViewStoresWindow(() -> { // use lambda expressions to create anonymous methods
-            try {
-                showCustomerMenu(customer);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }, this.customer, this); // the lambda expression is passed as the first argument,
-        // and the Customer object is passed as the second argument
-        storesWindow.run();
-    }
-
-    public void run(Customer customer) throws IOException {
-
+    public void run() throws IOException {
+        CSVReader reader = new CSVReader();
         CSVWriter writer = new CSVWriter(customer);
 
-        Map<String, Seller> sellerMap = csvReader.readSellers();
+        String filename = reader.getFilenames(customer.getUsername(), store.getStoreName());
+        //String otherFilename = reader.getFilenames(store.getSeller().getUsername(), customer.getUsername());
+        File file = new File(filename);
+        //File otherFile = new File(otherFilename);
 
-        // check other side's invisible list
-        for (String seller : sellerMap.keySet()) {
-            sellerList.add(seller);
-            Seller se = sellerMap.get(seller);
-            List<String> otherSide = csvReader.getInvisList(se);
-            if (otherSide.contains(customer.getUsername())) {
-                sellerList.remove(seller);
-            }
+//        if (!file.exists() && otherFile.exists()) { // update file from otherFile
+//            file.createNewFile();
+//            BufferedWriter bwr = new BufferedWriter(new FileWriter(file));
+//            String formatHeader = String.format("%s,%s,%s\n", "timestamp",
+//                    "username", "message");
+//            List<String> messages = reader.readMessages(otherFilename);
+//            bwr.write(formatHeader);
+//            writer.updateConversationFile(filename, messages);
+//
+//
+//        } else if (!otherFile.exists() && file.exists()) { // update otherFile from file
+//            otherFile.createNewFile();
+//            BufferedWriter bwr = new BufferedWriter(new FileWriter(otherFile));
+//            String formatHeader = String.format("%s,%s,%s\n", "timestamp",
+//                    "username", "message");
+//            List<String> messages = reader.readMessages(filename);
+//            bwr.write(formatHeader);
+//            writer.updateConversationFile(otherFilename, messages);
+//
+//
+//        } else { // both of two file do not exist
+//            file.createNewFile();
+//            otherFile.createNewFile();
+//            BufferedWriter bwr = new BufferedWriter(new FileWriter(file));
+//            BufferedWriter bwf = new BufferedWriter(new FileWriter(otherFile));
+//            String formatHeader = String.format("%s,%s,%s\n", "timestamp",
+//                    "username", "message");
+//            bwr.write(formatHeader);
+//            bwf.write(formatHeader);
+//
+//        }
+
+        if (!file.exists()) {
+            file.createNewFile();
+            BufferedWriter bwr = new BufferedWriter(new FileWriter(file));
+            String formatHeader = String.format("%s,%s,%s\n", "timestamp",
+                    "username", "message");
+            bwr.write(formatHeader);
+            bwr.close();
         }
 
-        blockList = csvReader.getBlockList(customer); // load all the blocked users
-        invisList = csvReader.getInvisList(customer); // load all the invisible users
+        messages = reader.readMessages(filename);
 
-        JFrame frame = new JFrame("Customer Menu");
-        frame.setSize(new Dimension(500, 600));
+
+        JFrame frame = new JFrame("Send Message");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
+        frame.setSize(new Dimension(600, 400));
         frame.setLayout(new BorderLayout());
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
+        JPanel labelPanel = new JPanel();
+        labelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        labelPanel.add(new JLabel("Store Name: " + store.getStoreName()));
+        labelPanel.add(new JLabel(" | "));
+        labelPanel.add(new JLabel("Seller: " + store.getSeller().getUsername()));
+        frame.add(labelPanel, BorderLayout.NORTH);
 
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JTextField searchField = new JTextField(25);
-        searchField.setEditable(false);
-        searchPanel.add(new JLabel("Search user"));
-        searchPanel.add(searchField);
-        mainPanel.add(searchPanel, BorderLayout.NORTH);
+        conversationPanel.setLayout(new BoxLayout(conversationPanel, BoxLayout.Y_AXIS));
+        updateConversation(messages);
+        JScrollPane scrollPane = new JScrollPane(conversationPanel);
+        frame.add(scrollPane, BorderLayout.CENTER);
 
-        searchField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Make the searchField editable when clicked
-                searchField.setEditable(true);
-            }
-        });
+        JLabel inputLabel = new JLabel("Enter: ");
+        // a msg&label panel to contain enter label and text field
+        JPanel msgAndLabelPanel = new JPanel(new FlowLayout());
+        msgAndLabelPanel.add(inputLabel);
 
-        searchField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                String searchUsername = searchField.getText();
-                List<String> searUserInvisList = new ArrayList<>();
-                Seller searched = sellerMap.get(searchUsername);
-                if (searched == null) { // if searched user is null then no results
-                    JOptionPane.showMessageDialog(null, NO_RESULT + searchUsername,
-                            null, JOptionPane.ERROR_MESSAGE);
-                } else { // if found
-                    try {
-                        searUserInvisList = csvReader.getInvisList(searched);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    if (searUserInvisList.contains(customer.getUsername())) { // check if the customer in the user's invisible list
-                        JOptionPane.showMessageDialog(null, INVISIBLE_WARNING,
-                                null, JOptionPane.PLAIN_MESSAGE);
-                    } else {
-                        JOptionPane.showMessageDialog(null, FOUND_USER + searched.getUsername(),
-                                null,JOptionPane.PLAIN_MESSAGE);
-                    }
+        inputMessage = new JTextField(30);
+        inputMessage.setPreferredSize(new Dimension(30, 25));
+        msgAndLabelPanel.add(inputMessage);
 
-                }
-            }
-        });
+        // a panel to contain msg&label panel and send button
+        JPanel inputPanel = new JPanel(new BorderLayout());
+        inputPanel.add(msgAndLabelPanel, BorderLayout.WEST);
 
-        JPanel friendPanel = new JPanel();
-        friendPanel.setLayout(new BoxLayout(friendPanel, BoxLayout.Y_AXIS));
-
-        for (String friend : sellerList) {
-
-            JPanel singleFriendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            JLabel friendLabel = new JLabel(friend);
-            friendLabel.setPreferredSize(new Dimension(100, 20));
-            singleFriendPanel.add(friendLabel);
-
-            JPanel friendButtonPanel = new JPanel();
-            JButton blockButton = new JButton("Block");
-
-            friendButtonPanel.add(blockButton);
-            blockButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    // just add to block list, do not need to remove from sellerList(friendList)
-                    if (blockList.contains(friend)) {
-                        JOptionPane.showMessageDialog(null, REPEAT_BLOCK,
-                                "Error", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        JOptionPane.showMessageDialog(null, BLOCK_SUCCEED,
-                                "", JOptionPane.INFORMATION_MESSAGE);
-                        blockList.add(friend);
-                    }
-
-                    // (write) update csv file
-                    try {
-                        writer.writeBlockList(customer, blockList);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
-
-            JButton ivsButton = new JButton("Invisible");
-
-            friendButtonPanel.add(ivsButton);
-            ivsButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    if (invisList.contains(friend)) {
-                        JOptionPane.showMessageDialog(null, REPEAT_INVISIBLE,
-                                "Error", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        JOptionPane.showMessageDialog(null, INVISIBLE_SUCCEED,
-                                "", JOptionPane.INFORMATION_MESSAGE);
-                        invisList.add(friend);
-                    }
-
-                    // (write) update csv file
-                    try {
-                        writer.writeInvisList(customer, invisList);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
-
-            singleFriendPanel.add(friendButtonPanel);
-
-            friendPanel.add(singleFriendPanel);
-        }
-
-        JScrollPane scrollPane = new JScrollPane(friendPanel);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton viewBlockList = new JButton(BLOCK_LIST);
-        JButton viewInvisibleList = new JButton(INVISIBLE_LIST);
-        JButton viewAllStores = new JButton(VIEW_ALL_STORES);
-        JButton logOutButton = new JButton(LOG_OUT);
-        bottomPanel.add(viewAllStores);
-        bottomPanel.add(viewBlockList);
-        bottomPanel.add(viewInvisibleList);
-        bottomPanel.add(logOutButton);
-
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        viewAllStores.addActionListener(new ActionListener() {
+        JPanel sendButtonPanel = new JPanel(new FlowLayout());
+        JButton sendButton = new JButton("Send");
+        sendButtonPanel.add(sendButton);
+        inputPanel.add(sendButtonPanel, BorderLayout.EAST);
+        sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                String msg = inputMessage.getText();
+
+                // get the current timestamp
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String timestampStr = dateFormat.format(timestamp);
+
+                // add new message to messages list
+                String format = "%s& . _ . &%s& . _ . &%s";
+                String newMSGStr = String.format(format, timestampStr, customer.getUsername(), msg);
+                messages.add(newMSGStr);
+
+                // write csv
                 try {
-                    frame.dispose();
-                    openViewStoresWindow(customer);
+                    inputMessage.setText(""); // once send message, empty send message text field
+                    updateConversation(messages);
+
+                    String filename = reader.getFilenames(customer.getUsername(), store.getStoreName());
+                    String otherFilename = reader.getFilenames(store.getSeller().getUsername(), customer.getUsername());
+                    File other = new File(otherFilename);
+                    if (!other.exists()) {
+                        other.createNewFile();
+                        BufferedWriter bwr = new BufferedWriter(new FileWriter(file));
+                        String formatHeader = String.format("%s,%s,%s\n", "timestamp",
+                                "username", "message");
+                        bwr.write(formatHeader);
+                        bwr.close();
+                    }
+                    writer.writeMessage(filename, newMSGStr);
+                    writer.updateConversationFile(otherFilename, messages);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
         });
 
-        viewBlockList.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                showBlockDialog(customer);
-            }
-        });
+        frame.add(inputPanel, BorderLayout.SOUTH);
 
-        viewInvisibleList.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                showInvisibleDialog(customer);
-            }
-        });
-
-        logOutButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-
-
-                frame.dispose();
-            }
-        });
-
-        frame.add(mainPanel);
         frame.setVisible(true);
 
-
-    }
-
-    // have to separately refresh the block panel
-    private void updateBlockPanel(List<String> blockList) {
-        CSVWriter writer = new CSVWriter(customer);
-
-        blockPanel.removeAll();
-
-        if (blockList.isEmpty()) {
-
-            JLabel emptyMessage = new JLabel("Block list is empty");
-            emptyMessage.setHorizontalAlignment(SwingConstants.CENTER);
-            blockPanel.add(emptyMessage);
-        } else {
-
-            for (String block : blockList) {
-                JPanel singleBlockPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                JLabel blockLabel = new JLabel(block);
-                blockLabel.setPreferredSize(new Dimension(100, 20));
-                singleBlockPanel.add(blockLabel);
-
-                JButton removeButton = new JButton("Remove");
-                singleBlockPanel.add(removeButton);
-
-                removeButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        blockList.remove(block);
-
-                        updateBlockPanel(blockList);
-                        blockPanel.revalidate();
-                        blockPanel.repaint();
-
-                        // (write) update csv file
-                        try {
-                            writer.writeBlockList(customer, blockList);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
-
-                blockPanel.add(singleBlockPanel);
-            }
-        }
-
-    }
-
-
-    // method to show block list
-    private void showBlockDialog(Customer customer) {
-        JDialog blockDialog = new JDialog();
-        blockDialog.setLayout(new BorderLayout());
-        blockDialog.setSize(new Dimension(300, 400));
-        blockDialog.setLocationRelativeTo(null);
-        blockDialog.setTitle("Blocked User");
-
-        blockPanel.setLayout(new BoxLayout(blockPanel, BoxLayout.Y_AXIS));
-        updateBlockPanel(blockList);
-
-
-
-        JScrollPane scrollPane = new JScrollPane(blockPanel);
-        blockDialog.add(scrollPane, BorderLayout.CENTER);
-        blockDialog.setVisible(true);
-    }
-
-    public void updateInvisiblePanel(List<String> invisList) {
-        CSVWriter writer = new CSVWriter(customer);
-
-        invisiblePanel.removeAll();
-
-        if (invisList.isEmpty()) {
-            JLabel emptyLabel = new JLabel("Invisible list is empty");
-            invisiblePanel.add(emptyLabel);
-
-        } else {
-            for (String invisible : invisList) {
-                JPanel singleInvisiblePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                JLabel invisibleLabel = new JLabel(invisible);
-                invisibleLabel.setPreferredSize(new Dimension(100, 20));
-                singleInvisiblePanel.add(invisibleLabel);
-
-                JButton removeButton = new JButton("Remove");
-                singleInvisiblePanel.add(removeButton);
-
-                removeButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        invisList.remove(invisible);
-
-                        updateInvisiblePanel(invisList);
-                        invisiblePanel.revalidate();
-                        invisiblePanel.repaint();
-
-                        // (write) update csv file
-                        try {
-                            writer.writeInvisList(customer, invisList);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
-
-                invisiblePanel.add(singleInvisiblePanel);
-            }
-        }
-
-    }
-
-    // method to show block list
-    private void showInvisibleDialog(Customer customer) {
-
-        JDialog invisibleDialog = new JDialog();
-        invisibleDialog.setTitle("Become invisible to");
-        invisibleDialog.setLayout(new BorderLayout());
-        invisibleDialog.setSize(new Dimension(300, 400));
-        invisibleDialog.setLocationRelativeTo(null);
-
-        invisiblePanel.setLayout(new BoxLayout(invisiblePanel, BoxLayout.Y_AXIS));
-        updateInvisiblePanel(invisList);
-
-
-        JScrollPane scrollPane = new JScrollPane(invisiblePanel);
-        invisibleDialog.add(scrollPane, BorderLayout.CENTER);
-
-        invisibleDialog.setVisible(true);
     }
 }
