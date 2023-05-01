@@ -1,8 +1,10 @@
 package server;
 
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -11,6 +13,8 @@ import core.Customer;
 import core.Seller;
 import core.Store;
 import core.User;
+
+import utils.DataManager;
 
 /**
  * This class is the server thread that will kick off each time a client is connected
@@ -28,6 +32,13 @@ public class ServerThread extends Thread {
     private static final String LOG_IN_OPTION_CODE = "AA02";
     private static final String EXIT_FIRST_MENU_OPTION_CODE = "AA03";
 
+    private static final String CONTACT_USER_CODE = "BB01";
+    private static final String BLOCK_USER_CODE = "BB02";
+    private static final String SET_INVISIBLE_CODE = "BB03";
+    private static final String VIEW_DASHBOARD_CODE = "BB04";
+    private static final String EXPORT_FILE_CODE = "BB05";
+    private static final String CREATE_STORE_CODE = "BB06";
+
     private static final String CONFIRMATION_CODE = "OKAY";
     private static final String REJECTION_CODE = "NOT OKAY";
     private static final String FULL_EXIT_CODE = "FULL EXIT";
@@ -40,13 +51,13 @@ public class ServerThread extends Thread {
     private static ArrayList<Store> stores; //list of store accounts that will be built once the program starts
     private static String customersFileName = "customers.csv";
     private static String sellersFileName = "sellers.csv";
-    private static HashMap<User, String> tempBlocked;
-    private static HashMap<User, String> tempInvis;
+    private HashMap<User, String> tempBlocked;
+    private HashMap<User, String> tempInvis;
+    private static DataManager dataManager;
 
-    private static User currentAccount;
+    private User currentAccount;
 
-    private static Store currentStore;
-    private static ArrayList<ServerThread> serverThreads;
+    private Store currentStore;
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
@@ -62,110 +73,85 @@ public class ServerThread extends Thread {
             //determine action type (1 - create new account, 2 - log in, 3 - exit)
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
-            
             System.out.println("Serverthread initiated");
+
+            dataManager = new DataManager();
 
             //****************
             while(true)
             {
                 //code to construct all data objects
-                tempBlocked = new HashMap<User, String>();
-                tempInvis = new HashMap<User, String>();
-        
-                customers = createCustomers("customers.csv");
-                sellers = createSellers("sellers.csv");
-                stores = createStores(sellers);
+
         
                 //refreshUsers(tempBlocked, tempInvis);
 
                 String firstAction = in.readLine(); //determineAccountActionType(in);
 
-                if(firstAction.equals(CREATE_NEW_ACCOUNT_OPTION_CODE))//user is creating a new account
-                {
-                    createNewAccount(in, out);
-                } else if(firstAction.equals(LOG_IN_OPTION_CODE))//user is logging in
-                {
-                    /*
-                     * if(logIn(in))//log in success
-                    {
-                        while(true)
-                        {
-                            int actionType = 1; //determineActionType(in);
+                ArrayList<String> actions = decodeString(firstAction);
 
-                            if(actionType == 1)//user is opening message history
-                            {
-                                int option;
-                                User other = selectUser(in);
-                                if(currentAccount.getRole().equals("Seller"))
-                                {
-                                    //currentStore = selectStore(in, (Seller) currentAccount);
-                                }
-                                if(other == null) //if user has been blocked, exit
-                                {
-                                    break;
-                                }
-                                do
-                                {
-                                    //ConversationHistory currentConversation = openConversation(in, other);
-                                    //option = determineConversationAction(in);
-                                    switch(option)
-                                    {
-                                        case 1: //user is sending a message
-                                            //sendMessage(in, currentConversation, currentStore.getStoreName());
-                                            break;
-                                        case 2: //user is editing a message
-                                            //editMessage(in, currentConversation);
-                                            break;
-                                        case 3: //user is deleting a message
-                                            //deleteMessage(in, currentConversation);
-                                        case 4: //upload txt
-                                            System.out.println("Enter name of text file that you would like " +
-                                                    "to upload(must only contain message contents): ");
-                                            //in.nextLine();
-                                            //String fileName = in.nextLine();
-                                            System.out.println("Enter the store that you would " +
-                                                    "like to send the message to/from: ");
-                                            //String store = in.nextLine();
-                                            //FileImport fileImport = new FileImport(fileName, store, currentAccount);
-                                        case 5: //exit
-                                            break;
-                                    }
-                                } while(option != 5);
-
-                            } else if(actionType == 2) {//user is blocking
-                                //blockUser(in);
-                            } else if(actionType == 3) {//user is becoming invisible to someone
-                                //invisibleUser(in);
-                            }
-                            else if(actionType == 4)//user is opening up dashboard
-                            {
-                                try
-                                {
-                                    //Dashboard db = new Dashboard(currentAccount);
-                                } catch(IOException e)
-                                {
-                                    e.printStackTrace();
-                                }
-
-                            }
-                            else if (actionType == 5)
-                            {
-                                //FileExport fileExport = new FileExport(currentAccount);
-                            }
-                            else if(actionType == 6)//user is exiting
-                            {
-                                //System.out.println(MESSAGE_LOGGED_OUT);
-                                break;
-                            }
-                        }
+                if(actions.get(0).equals(CREATE_NEW_ACCOUNT_OPTION_CODE)) {//user is creating account
+                
+                    //if creating account, first string in the list is the code. second is the acc type. third is the name. fourth is pw
+                    if(actions.get(1).equals("Customer")) {
+                        String name = actions.get(2);
+                        String password = actions.get(3);
+                        dataManager.addNewAccount(new Customer(name, password));
+                    } else {
+                        String name = actions.get(2);
+                        String password = actions.get(3);
+                        dataManager.addNewAccount(new Seller(name, password));
                     }
-                    else {} //do nothing if log in fails
-                     */
-                } else if(firstAction.equals(EXIT_FIRST_MENU_OPTION_CODE))//user is ending the program
-                {
-                    //System.out.println(MESSAGE_GOODBYE);
-                    break;
+                    System.out.println("new account made");
+                } else if(actions.get(0).equals(LOG_IN_OPTION_CODE)) {//user is logging in
+                    //if logging in, first string in the list is the code. second is the name. third is the pw
+                    String name = actions.get(2);
+                    String password = actions.get(3);
+                    User tempUser = dataManager.getUser(name);
+                    if(tempUser == null)
+                    {
+                        if(tempUser.authenticate(password)) {
+                            //logged in
+                            sendConfirmation(out);
+                            currentAccount = tempUser;
+                        }
+                    } else {
+                        sendRejection(out);
+                        //do nothing
+                    }
+                } else if(actions.get(0).equals(EXIT_FIRST_MENU_OPTION_CODE)) { //user is exiting
+                    currentAccount = null;
+                    currentStore = null;
+                } else if(actions.get(0).equals(CONTACT_USER_CODE)) {
+                    //print list of users that can be contacted
+                } else if(actions.get(0).equals(BLOCK_USER_CODE)) {
+                    //print list of users that can be blocked
+                } else if(actions.get(0).equals(SET_INVISIBLE_CODE)) {
+                    //print list of users that can be set invisible to
+                } else if(actions.get(0).equals(VIEW_DASHBOARD_CODE)) {
+                    //print any stats needed for the dashboard
+                } else if(actions.get(0).equals(EXPORT_FILE_CODE)) {
+                    //things to export the file
+                } else if(actions.get(0).equals(CREATE_STORE_CODE)) {
+                    //GUI to create a store
+                    //second string is storename, third is product, fourth is amount, fifth is price, sixth is seller name
+                    String storeName = actions.get(1);
+                    List<String> product = parseStrings(actions.get(2));
+                    List<String> amountAsString = parseStrings(actions.get(3));
+                    List<Integer> amount = new ArrayList<Integer>();
+                    for(String str: amountAsString) {
+                        amount.add(Integer.parseInt(str));
+                    }
+                    List<String> priceAsString = parseStrings(actions.get(4));
+                    List<Double> price = new ArrayList<Double>();
+                    for(String str: priceAsString) {
+                        price.add(Double.parseDouble(str));
+                    }
+                    User seller = dataManager.getUser(actions.get(5));
+                    
+                    Store newStore = new Store(storeName, product, amount, price, (Seller) seller);
+                    dataManager.addStore(newStore);
                 }
+
             }
 
             //****************** 
@@ -259,49 +245,47 @@ public class ServerThread extends Thread {
     }
 
     //work on this!!
-    private static boolean logIn(BufferedReader in, PrintWriter out) throws IOException //any parameters that are needed
+    private boolean logIn(BufferedReader in, PrintWriter out) throws IOException //any parameters that are needed
     {
         //This method eventually needs to set the currentUser field to the account that was logged into
 
-        int accountType;
+        User tempAccount;
         int index;
-        //while(true) //prompt username
+        while(true) //prompt username
         {
             //client should prompt the user for the username
             String name = in.readLine();
-            accountType = 1;
             //read in name and check the database for account with said username
-            /* 
-            accountType = determineAccountType(name);
-            if(accountType == -1)
+            
+            tempAccount = dataManager.getUser(name);
+            if(tempAccount == null)
             {
                 out.println(REJECTION_CODE);
             } else
             {
-                //index = getIndexOfAccount(name, accountType); //grab account from database
                 out.println(CONFIRMATION_CODE);
                 break;
             }
-            */
+            
         }
         
         //password verification
-        if(accountType == 1)
+        if(true)
         {
             int counter = 0;
             while(true) { //prompt customer password
                 //client prompt for password
                 String passwordAttempt = in.readLine();
                 //authenticate password
-                index = 0;
-                if(!customers.get(index).authenticate(passwordAttempt)) {
+
+                if(!tempAccount.authenticate(passwordAttempt)) {
                     //notify invalid password
                     sendRejection(out);
                 } else {
                     //notify logged in status
                     sendConfirmation(out);
-                    System.out.println("Logged in as: " + customers.get(index).getUsername());
-                    currentAccount = customers.get(index);
+                    System.out.println("Logged in as: " + tempAccount.getUsername());
+                    currentAccount = tempAccount;
                     return true;
                 }
 
@@ -312,8 +296,11 @@ public class ServerThread extends Thread {
                 }
 
             }
-            return false;
-        } else
+        } 
+
+        return false;
+        /*
+         * else
         {
             int counter = 0;
             while(true) { //prompt password for seller
@@ -339,12 +326,92 @@ public class ServerThread extends Thread {
             }
             return false;
         }
+         */
     }
     
 
-    private static void logOut()
+    private void logOut()
     {
         currentAccount = null;
+    }
+
+    private static User selectUser(BufferedReader in)
+    {
+        /*
+         *         boolean isCustomer = false;
+        if(currentAccount.getRole().equals("Seller")) //if the role is a seller
+        {
+            printCustomers(false, false);
+            isCustomer = false;
+        } else //if the user is a customer
+        {
+            boolean done = false;
+            while(!done)
+            {
+                ArrayList<Store> visibleStores = getVisibleStores(stores, currentAccount);
+                for(int i = 0; i < visibleStores.size(); i++)
+                {
+                    System.out.println((i+1) + " - " + stores.get(i).getStoreName());
+                }
+
+                try
+                {
+                    System.out.println(PROMPT_MESSAGE_STORE);
+                    String input = in.nextLine();
+                    int index = Integer.parseInt(input);
+                    if(index > visibleStores.size() || index <= 0) //if input is not an option
+                    {
+                        System.out.println(MESSAGE_ERROR_INVALID_OPTION);
+                    } else
+                    {
+                        Store selectedStore = visibleStores.get(index - 1);
+                        if(currentAccount.getBlockedList() == null)
+                        {
+                            currentStore = selectedStore;
+                            return sellers.get(getIndexOfAccount(selectedStore.getSeller(), 2));
+                        } else if(currentAccount.isUserBlocked(sellers.get(getIndexOfAccount(selectedStore.getSeller(),2))))
+                        {
+                            System.out.println(MESSAGE_ERROR_BLOCKED_USER);
+                        } else
+                        {
+                            currentStore = selectedStore;
+                            return sellers.get(getIndexOfAccount(selectedStore.getSeller(), 2));
+                        }
+                        done = true;
+                    }
+                } catch(NumberFormatException e)
+                {
+                    System.out.println(MESSAGE_ERROR_INVALID_OPTION);
+                }
+            }
+            printSellers(false, false);
+            isCustomer = true;
+        }
+        int number = 0;
+        while(true)
+        {
+            System.out.println(PROMPT_CONTACTEE);
+            String contactee = in.nextLine();
+
+            try
+            {
+                number = Integer.parseInt(contactee);
+                break;
+            } catch(NumberFormatException e)
+            {
+                System.out.println(MESSAGE_ERROR_ACTION_TYPE);
+            }
+        }
+
+        if(isCustomer)
+        {
+            return sellers.get(number - 1);
+        } else
+        {
+            return customers.get(number - 1);
+        }
+         */
+        return new User("", "", "Seller");
     }
 
 
@@ -621,6 +688,30 @@ public class ServerThread extends Thread {
         return -1;
     }
 
+    private static ArrayList<String> decodeString(String bigString) {//this method will break down a client message to see what its saying
+        String str = bigString;
+        ArrayList<String> list = new ArrayList<String>();
+
+        if (str != null && !str.equals("null") && !str.equals("") && !str.equals("{}")) {
+            boolean done = false;
+            do {
+                int indexOf$ = str.indexOf("$");
+                if (indexOf$ != -1) {
+                    list.add(str.substring(0, indexOf$));
+                    str = str.substring(indexOf$ + 1); //Add one because of additional ;
+
+                } else {
+                    list.add(str);
+                    done = true;
+                }
+            } while (!done);
+
+            return list;
+
+        } else {
+            return list;
+        }
+    }
 
     private static ArrayList<String> parseStrings(String bigString) //this method will return a list of strings given a bigString
     {
