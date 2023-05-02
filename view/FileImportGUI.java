@@ -1,3 +1,6 @@
+package view;
+
+import core.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -45,7 +48,6 @@ public class FileImportGUI extends JFrame implements ActionListener {
 
         // display the JFrame
         setVisible(true);
-        JOptionPane.showMessageDialog(null,"Imported successfully");
     }
 
     // action performed method for the send button
@@ -55,6 +57,7 @@ public class FileImportGUI extends JFrame implements ActionListener {
             String store = storeField.getText();
             String desiredUser = desiredUserField.getText();
             FileImport fileImport = new FileImport(fileNameRead, store, user, desiredUser, socket);
+            JOptionPane.showMessageDialog(null,"Imported successfully");
             dispose(); // close the JFrame
         }
     }
