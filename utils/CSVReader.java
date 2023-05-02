@@ -17,12 +17,12 @@ public class CSVReader {
     public static Map<User, ConversationHistory> historyMap = new HashMap<>();
 
     public String getFilenames(String user, String other) {
-        String csvFilename = "./src/" + user + "&&" + other + ".csv"; // add "./src/" just for running it, this is my path in Intellij
+        String csvFilename = "" + user + "&&" + other + ".csv"; // add "" just for running it, this is my path in Intellij
         return csvFilename;                                         //  you can change the path
     }
 
     public Map<String, Customer> readCustomers() throws IOException {
-        String customerCSV = "./src/customers.csv";
+        String customerCSV = "customers.csv";
         BufferedReader bfr = new BufferedReader(new FileReader(customerCSV));
         String line;
         bfr.readLine(); // escape the header
@@ -54,7 +54,7 @@ public class CSVReader {
 
     public Map<String, Store> readStores() throws IOException {
 
-        String storeFilename = "./src/stores.csv";
+        String storeFilename = "stores.csv";
         BufferedReader bfr = new BufferedReader(new FileReader(storeFilename));
         String line;
 
@@ -95,7 +95,7 @@ public class CSVReader {
 
     public Map<String, Seller> readSellers() throws IOException {
 
-        String sellerFilename = "./src/sellers.csv"; // this is my path, you can change
+        String sellerFilename = "sellers.csv"; // this is my path, you can change
         BufferedReader bfr = new BufferedReader(new FileReader(sellerFilename));
         String line;
 
@@ -135,7 +135,7 @@ public class CSVReader {
         String line;
 
         if (user.getRole().equals("Customer")) {
-            String customerCSV = "./src/customers.csv"; // this my path in Intellij, you can change it
+            String customerCSV = "customers.csv"; // this my path in Intellij, you can change it
             BufferedReader bfr = new BufferedReader(new FileReader(customerCSV));
 
             bfr.readLine(); // escape the header
@@ -158,7 +158,7 @@ public class CSVReader {
             }
 
         } else if (user.getRole().equals("Seller")) {
-            String sellerCSV = "./src/sellers.csv";
+            String sellerCSV = "sellers.csv";
             BufferedReader bfr = new BufferedReader(new FileReader(sellerCSV));
 
             bfr.readLine(); // escape the header
@@ -190,7 +190,7 @@ public class CSVReader {
         String line;
 
         if (user.getRole().equals("Customer")) { // index of customer's invisible column is 4
-            String customerCSV = "./src/customers.csv";
+            String customerCSV = "customers.csv";
             BufferedReader bfr = new BufferedReader(new FileReader(customerCSV));
 
             bfr.readLine(); // escape the header
@@ -212,7 +212,7 @@ public class CSVReader {
             }
 
         } else if (user.getRole().equals("Seller")) { // index of seller's invisible column is 4
-            String sellerCSV = "./src/sellers.csv";
+            String sellerCSV = "sellers.csv";
             BufferedReader bfr = new BufferedReader(new FileReader(sellerCSV));
 
             bfr.readLine(); // escape the header
@@ -243,7 +243,7 @@ public class CSVReader {
         List<Store> sellerStore = new ArrayList<>();
         Store storeToFind;
         String line;
-        BufferedReader bfr = new BufferedReader(new FileReader("./src/sellers.csv"));
+        BufferedReader bfr = new BufferedReader(new FileReader("sellers.csv"));
         bfr.readLine(); // escape the header
         while ((line = bfr.readLine()) != null) {
             String[] attr = line.split(",");
@@ -298,20 +298,23 @@ public class CSVReader {
         List<Message> conversationList = new ArrayList<>();
 
         for (String filename : conFilenames) {
-            BufferedReader bfr = new BufferedReader(new FileReader(filename));
-            String line;
-            bfr.readLine(); // escape the header
-
-            while ((line = bfr.readLine()) != null && !line.equals("")) {
-                String[] attr = line.split(",");
-                String time = attr[0];
-                String sender = attr[1];
-                String content = attr[2].replaceAll("_", ",");
-                Message message = new Message(sender, content, time);
-                conversationList.add(message);
-
-                // instance ConversationHistory
-                conversationHis = new ConversationHistory(conversationList, filename);
+            if(!filename.equals("..."))
+            {
+                BufferedReader bfr = new BufferedReader(new FileReader(filename));
+                String line;
+                bfr.readLine(); // escape the header
+    
+                while ((line = bfr.readLine()) != null && !line.equals("")) {
+                    String[] attr = line.split(",");
+                    String time = attr[0];
+                    String sender = attr[1];
+                    String content = attr[2].replaceAll("_", ",");
+                    Message message = new Message(sender, content, time);
+                    conversationList.add(message);
+    
+                    // instance ConversationHistory
+                    conversationHis = new ConversationHistory(conversationList, filename);
+                }
             }
         }
 
@@ -325,7 +328,7 @@ public class CSVReader {
         List<String> allFileList = new ArrayList<>();
 
         if (user instanceof Customer) {
-            filename = "./src/" + "customers" + ".csv";
+            filename = "" + "customers" + ".csv";
             bfr = new BufferedReader(new FileReader(filename));
             bfr.readLine(); // escape the header
 
@@ -337,7 +340,7 @@ public class CSVReader {
 
             }
         } else if (user instanceof Seller) {
-            filename = "./src/" + "sellers" + ".csv";
+            filename = "" + "sellers" + ".csv";
             bfr = new BufferedReader(new FileReader(filename));
             bfr.readLine(); // escape the header
 
