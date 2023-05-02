@@ -17,7 +17,9 @@ public class User {
     private String role;
     private HashMap<User, ConversationHistory> conversations; // each user can get their conversation history
     public static HashMap<String, User> usersByUsername = new HashMap<>(); // distinguished by their name
-    private List<User> blockedUsers;
+    public List<String> blockList;
+    public List<String> invisList;
+    private List<String> conFilenames;
 
     public User(String username, String password, String role) {
         this.username = username;
@@ -59,61 +61,32 @@ public class User {
         return usersByUsername;
     }
 
-    // I think only the password can be edited once the account created
-    public void editAccount(String username, String password) {
-        User userToEdit = usersByUsername.get(username);
-        if (userToEdit != null) {
-            userToEdit.setPassword(password);
-        }
+    public void setBlockList(List<String> list) {
+        blockList = list;
     }
 
-    public void deleteAccount(String email) {
-        usersByUsername.remove(email);
+    public void setInvisList(List<String> list) {
+        invisList = list;
     }
 
-    public void editMessage(User recipient, Message message, String newContent) {
-        message.setContent(newContent);
-        message.setRecipient(recipient);
+    public void setConFilenames(List<String> list) {
+        conFilenames = list;
     }
-
-    public void createMessage(User recipient, String content) {
-        Message message = new Message(this, recipient, content);
-        ConversationHistory history = conversations.get(recipient);
-        if (history == null) {
-            history = new ConversationHistory(new ArrayList<>());
-            conversations.put(recipient, history);
-        }
-        history.getMessagesHis().add(message);
-    }
-
-    public void deleteMessage(Message message) {
-        ConversationHistory history = conversations.get(message.getRecipient());
-        if (history != null) {
-            history.getMessagesHis().remove(message);
-        }
-    }
-
+    
     public HashMap<User, ConversationHistory> getConversations() {
         return conversations;
     }
 
-    public ArrayList<User> getAllUsers() {
-        ArrayList<User> users = new ArrayList<>();
-        for (User user : usersByUsername.values()) {
-            users.add(user);
-        }
-        return users;
+    public List<String> getBlockList() {
+        return blockList;
     }
 
-    public void blockUser(User user) {
-        blockedUsers.add(user);
+    public List<String> getInvisList() {
+        return invisList;
     }
 
-    public boolean isUserBlocked(User user) {
-        return blockedUsers.contains(user);
+    public List<String> getConFilenames() {
+        return conFilenames;
     }
 
-    public void addConversation(User u, ConversationHistory c) {
-        conversations.put(u, c);
-    }
 }

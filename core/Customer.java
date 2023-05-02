@@ -16,24 +16,6 @@ public class Customer extends User {
         super(email, password, "Customer");
     }
 
-    public List<Seller> getAllSellers() {
-        List<Seller> allSellers = new ArrayList<>();
-        for (User user : getAllUsers()) {
-            if (user instanceof Seller) {
-                allSellers.add((Seller) user);
-            }
-        }
-        return allSellers;
-    }
-
-    public void sendMessageToSeller(Seller recipient, String content) {
-        createMessage(recipient, content);
-    }
-
-    public void deleteMessageWithSeller(Message message) {
-        deleteMessage(message);
-    }
-
     public List<Seller> searchSellers(String kwd) {
         List<Seller> matchingSellers = new ArrayList<>();
         for (User user : usersByUsername.values()) {
@@ -44,13 +26,5 @@ public class Customer extends User {
         return matchingSellers;
     }
 
-    public List<Store> accessStores() {
-        List<Store> allStores = new ArrayList<>();
-        for (Seller seller : getAllSellers()) {
-            allStores.addAll(seller.getStores());
-        }
-        return allStores;
-    }
 
 }
-
