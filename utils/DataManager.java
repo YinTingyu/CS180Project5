@@ -131,6 +131,14 @@ public class DataManager {
         }
     }
 
+    public void writeMessage(String filename, String message, String senderName) {
+        try {
+            csvWriter.writeMessage(filename, message, senderName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void writeStores(List<String> storesList) {
         try {
             csvWriter.writeStores(storesList);
