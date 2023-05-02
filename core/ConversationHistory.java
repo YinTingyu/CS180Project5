@@ -14,6 +14,8 @@ import java.util.*;
  */
 public class ConversationHistory {
     private List<Message> messages;
+
+    // use filename to be the key
     private Map<String, List<Message>> conversationMap = new HashMap<>();
     private String filename;
 
@@ -46,5 +48,9 @@ public class ConversationHistory {
 
     public void setMessagesHis(List<Message> messages) {
         this.messages = messages;
+    }
+
+    public Map<String, List<Message>> getConversationMap() {
+        return conversationMap;
     }
 }
