@@ -11,11 +11,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.net.*;
+import java.io.*;
 /**
  * A customer menu
  *
@@ -30,7 +30,7 @@ public class CustomerMenu extends Menu {
     private static final String EXPORT_FILE = "Export File";
 
     public String message;
-    private String filename = "./src/customers.csv";
+    private String filename = "customers.csv";
     private CSVReader csvReader;
     public Customer customer;
     public List<String> blockList;
@@ -40,6 +40,8 @@ public class CustomerMenu extends Menu {
     private JPanel blockPanel = new JPanel();
 
     private Socket socket;
+    private BufferedReader bfr;
+    private PrintWriter pw;
 
 
     public void showCustomerMenu(Customer customer) throws IOException { // this is used when login and when go back
@@ -50,6 +52,11 @@ public class CustomerMenu extends Menu {
         this.customer = customer;
         this.csvReader = new CSVReader();
         this.socket = socket;
+        try {
+            bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            pw = new PrintWriter(socket.getOutputStream());
+        } catch(Exception e) {
+        }
     }
 
     public void openViewStoresWindow(Customer customer) throws IOException { // to open view all the stores GUI
@@ -59,7 +66,7 @@ public class CustomerMenu extends Menu {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }, this.customer, this); // the lambda expression is passed as the first argument,
+        }, this.customer, this, socket); // the lambda expression is passed as the first argument,
         // and the Customer object is passed as the second argument
         storesWindow.run();
     }
