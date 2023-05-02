@@ -54,15 +54,9 @@ public class LoginGUI implements ActionListener {
     BufferedReader bfr;
     PrintWriter pw;
 
-    public LoginGUI()
-    {
-        socket = null;
-        bfr = null;
-        pw = null;
-    }
-
     public LoginGUI(Socket socket)
     {
+        this.socket = socket;
         try{
             bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             pw = new PrintWriter(socket.getOutputStream());
@@ -74,7 +68,7 @@ public class LoginGUI implements ActionListener {
     private final Map<String, User> userMap = new HashMap<>();
 
     public void openCustomerMenu(Customer customer) {
-        CustomerMenu customerMenu = new CustomerMenu(customer);
+        CustomerMenu customerMenu = new CustomerMenu(customer, socket);
         try {
             customerMenu.showCustomerMenu(customer);
         } catch (IOException e) {
@@ -82,8 +76,9 @@ public class LoginGUI implements ActionListener {
         }
     }
 
-    public void openSellerMenu(Seller seller) {
-        SellerMenu sellerMenu = new SellerMenu(seller);
+    public void openSellerMenu(Seller seller, Socket socket) {
+        System.out.println("open seller");
+        SellerMenu sellerMenu = new SellerMenu(seller, socket);
         try {
             sellerMenu.showSellerMenu(seller);
         } catch (IOException e) {
@@ -125,7 +120,7 @@ public class LoginGUI implements ActionListener {
 
         JButton loginButton = new JButton("Login");
         loginButton.setBounds(10, 80, 80, 25);
-        loginButton.addActionListener(new LoginGUI());
+        loginButton.addActionListener(new LoginGUI(socket));
         loginPanel.add(loginButton);
 
         JButton signUpButton = new JButton("Register");
@@ -185,7 +180,7 @@ public class LoginGUI implements ActionListener {
 
             } else if (user instanceof Seller) {
                 success.setText(LOGIN_SUCCEED);
-                openSellerMenu((Seller) user);
+                openSellerMenu((Seller) user, socket);
 
 
             }
@@ -198,6 +193,7 @@ public class LoginGUI implements ActionListener {
 
     }
 
+    //done
     private void createAccountWindow() {
 
         JFrame signUpFrame = new JFrame(SIGNUP_TITLE);
@@ -265,7 +261,6 @@ public class LoginGUI implements ActionListener {
 
                     if (role.equals("Customer")) {
 
-                        successLabel.setText(REGISTER_SUCCESS_MSG);
                         newUser = new Customer(username, password);
                         customerMap.put(username, (Customer) newUser);
                         userMap.put(username, newUser);
@@ -273,32 +268,38 @@ public class LoginGUI implements ActionListener {
                         // write csv file
 
                         //tell server to write to CSV file
-                        pw.println(CREATE_NEW_ACCOUNT_OPTION_CODE + "$Customer$" + username + password);
-                        String file = "./src/customers.csv";
-                        try {
+                        pw.println(CREATE_NEW_ACCOUNT_OPTION_CODE + "$Customer$" + username + "$" + password);
+                        pw.flush();
+                        String file = "customers.csv";
+                        /*
+                         *                         try {
 
                             BufferedWriter bfw = new BufferedWriter(new FileWriter(file, true));
                             String newCustomer = username + "," + password + ",...,...,...";
                             // ... to avoid error ArrayOutOfBounds for new user without blocklist/invisible list
-                            bfw.write(newCustomer);
-
+                            bfw.write(newCustomer+"\n");
+                            bfw.flush();
                             bfw.close();
 
                         } catch (IOException ex) {
                             throw new RuntimeException(ex);
                         }
+                         */
+
+                        successLabel.setText(REGISTER_SUCCESS_MSG);
 
 
                     } else {
 
-                        successLabel.setText(REGISTER_SUCCESS_MSG);
                         newUser = new Seller(username, password);
                         sellerMap.put(username, (Seller) newUser);
                         userMap.put(username, newUser);
 
                         // write csv file
-                        pw.println(CREATE_NEW_ACCOUNT_OPTION_CODE + "$Seller$" + username + password);
-                        String file = "./src/sellers.csv";
+                        pw.println(CREATE_NEW_ACCOUNT_OPTION_CODE + "$Seller$" + username + "$" + password);
+                        pw.flush();
+                        /*
+                         *                         String file = "sellers.csv";
                         try {
 
                             BufferedWriter bfw = new BufferedWriter(new FileWriter(file, true));
@@ -310,6 +311,9 @@ public class LoginGUI implements ActionListener {
                         } catch (IOException ex) {
                             throw new RuntimeException(ex);
                         }
+                         */
+
+                        successLabel.setText(REGISTER_SUCCESS_MSG);
 
                     }
 
@@ -320,9 +324,16 @@ public class LoginGUI implements ActionListener {
 
         signUpFrame.setVisible(true);
     }
-    public static void main(String[] args) {
-        LoginGUI login = new LoginGUI();
-        login.run();
+
+    public void setSocket(Socket socket)
+    {
+        try{
+            bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            pw = new PrintWriter(socket.getOutputStream());
+            System.out.println("Socket has been set");
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
