@@ -37,11 +37,15 @@ public class ServerThread extends Thread {
     private static final String SET_INVISIBLE_CODE = "BB03";
     private static final String VIEW_DASHBOARD_CODE = "BB04";
     private static final String EXPORT_FILE_CODE = "BB05";
-    private static final String CREATE_STORE_CODE = "BB06";
+    private static final String IMPORT_FILE_CODE = "BB06";
+    private static final String CREATE_STORE_CODE = "BB067";
+
+    private static final String QUERY_USER_BLOCKED = "CC01";
 
     private static final String CONFIRMATION_CODE = "OKAY";
     private static final String REJECTION_CODE = "NOT OKAY";
     private static final String FULL_EXIT_CODE = "FULL EXIT";
+    private static final String REFRESH_CODE = "REFRESH";
     private static final String CUSTOMER_TYPE = "Customer";
     private static final String SELLER_TYPE = "Seller";
 
@@ -53,39 +57,34 @@ public class ServerThread extends Thread {
     private static String sellersFileName = "sellers.csv";
     private HashMap<User, String> tempBlocked;
     private HashMap<User, String> tempInvis;
-    private static DataManager dataManager;
+    private DataManager dataManager;
 
     private User currentAccount;
 
     private Store currentStore;
 
-    private ServerSocket serverSocket;
+    private static ServerSocket serverSocket;
     private Socket clientSocket;
+    private BufferedReader in;
+    private PrintWriter out;
 
-    public ServerThread(ServerSocket serverSocket, Socket clientSocket, DataManager datamanager) {
+    public ServerThread(ServerSocket serverSocket, Socket clientSocket, DataManager dataManager, BufferedReader in, PrintWriter out) {
         this.serverSocket = serverSocket;
         this.clientSocket = clientSocket;
         this.dataManager = dataManager;
+        this.in = in;
+        this.out = out;
     }
 
     public void run() {
         try {
-            
-            //determine action type (1 - create new account, 2 - log in, 3 - exit)
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
             System.out.println("Serverthread initiated");
-            
 
-            //****************
             while(true)
             {
-                //code to construct all data objects
-
-        
-                //refreshUsers(tempBlocked, tempInvis);
-
-                String firstAction = in.readLine(); //determineAccountActionType(in);
+                String firstAction = in.readLine();
+                System.out.println(firstAction);
+                System.out.println("test");
 
                 ArrayList<String> actions = decodeString(firstAction);
 
@@ -128,14 +127,40 @@ public class ServerThread extends Thread {
                         //open up message log between current user and the target user
                         dataManager.getUser(actions.get(1));
                     }
-                } else if(actions.get(0).equals(BLOCK_USER_CODE)) {
-                    //print list of users that can be blocked
+                } else if(actions.get(0).equals(BLOCK_USER_CODE)) {//work on this
+                    if(!(actions.size() <= 1))
+                    {
+                        String userName = actions.get(1);
+                        String blockeeName = actions.get(2);
+                        dataManager.addBlock(dataManager.getUser(userName),blockeeName);
+                    }
                 } else if(actions.get(0).equals(SET_INVISIBLE_CODE)) {
                     //print list of users that can be set invisible to
                 } else if(actions.get(0).equals(VIEW_DASHBOARD_CODE)) {
                     //print any stats needed for the dashboard
                 } else if(actions.get(0).equals(EXPORT_FILE_CODE)) {
                     //things to export the file
+                } else if(actions.get(0).equals(IMPORT_FILE_CODE)) {
+                    //user is importing a text file to send to someone
+                    //second string is senderName
+                    String senderName = actions.get(1);
+                    User sender = dataManager.getUser(senderName);
+                    //third string is recipient
+                    String recipientName = actions.get(2);
+                    User receiver = dataManager.getUser(recipientName);
+                    //fourth string is message
+                    String message = actions.get(3);
+
+                    String filename = senderName + "&&" + recipientName + ".csv";
+                    String otherFilename = recipientName + "&&" + senderName + ".csv";
+                    File other = new File(otherFilename);
+                    if(other.exists()) {
+                        dataManager.writeMessage(otherFilename, message);
+                    } else {
+                        dataManager.writeMessage(filename, message);
+                    }
+                    //update on the gui's
+                    
                 } else if(actions.get(0).equals(CREATE_STORE_CODE)) {
                     //GUI to create a store
                     //second string is storename, third is product, fourth is amount, fifth is price, sixth is seller name
@@ -155,11 +180,20 @@ public class ServerThread extends Thread {
                     
                     Store newStore = new Store(storeName, product, amount, price, (Seller) seller);
                     dataManager.addStore(newStore);
+                } else if(actions.get(0).equals(QUERY_USER_BLOCKED)) {
+                    //second string is username
+                    String requesterName = actions.get(1);
+                    //third string is person to look through blocklist
+                    String blockingName = actions.get(2);
+                    boolean isNotBlocked = !dataManager.getUser(blockingName).blockList.contains(requesterName);
+                    if(isNotBlocked) {
+                        sendConfirmation(out);
+                    } else {
+                        sendRejection(out);
+                    }
                 }
 
             }
-
-            //****************** 
 
         } catch (Exception e)
         {
@@ -768,14 +802,19 @@ public class ServerThread extends Thread {
     //utility method to send the confirmation
     private static void sendConfirmation(PrintWriter out) {
         out.println(CONFIRMATION_CODE);
+        out.flush();
+        System.out.println("sent confirm");
     }
 
     private static void sendRejection(PrintWriter out) {
         out.println(REJECTION_CODE);
+        out.flush();
+        System.out.println("sent rejection");
     }
 
     private static void sendExit(PrintWriter out) {
         out.println(FULL_EXIT_CODE);
+        out.flush();
     }
 
     private static boolean checkForDuplicates(String name) //return true if an account with that name exists already
