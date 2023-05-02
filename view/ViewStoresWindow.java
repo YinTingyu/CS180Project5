@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,17 +30,19 @@ public class ViewStoresWindow {
     private CustomerMenu customerMenu;
     private Runnable onGoBack;
     private Customer customer;
+    private Socket socket;
 
 
-    public ViewStoresWindow(Runnable onGoBack, Customer customer, CustomerMenu customerMenu) {
+    public ViewStoresWindow(Runnable onGoBack, Customer customer, CustomerMenu customerMenu, Socket socket) {
         this.onGoBack = onGoBack;
         this.customer = customer;
         this.customerMenu = customerMenu;
+        this.socket = socket;
     }
 
 
     public void openCustomerSMGWindow(CustomerMenu customerMenu, Store store, Customer customer) {
-        CustomerSMGWindow sendWindow = new CustomerSMGWindow(customerMenu, store, customer);
+        CustomerSMGWindow sendWindow = new CustomerSMGWindow(customerMenu, store, customer, socket);
         try {
             sendWindow.run();
         } catch (IOException e) {
