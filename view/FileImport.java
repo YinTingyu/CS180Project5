@@ -1,3 +1,6 @@
+package view;
+
+import core.*;
 import java.io.*;
 import java.net.*;
 
