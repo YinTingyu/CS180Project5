@@ -223,16 +223,22 @@ public class CSVWriter {
         bfw.close();
     }
 
-    public void writeProductName(int index, String newName) throws IOException {
+    public void writeProductName(Store store, int index, String newName) throws IOException {
 
         List<String> allLines = csvReader.readAllLines(storeFile);
         BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
 
-        for (String line : allLines) {
-            String[] attr = line.split(",");
+        for (int i = 0; i < allLines.size(); i++) {
+            String[] attr = allLines.get(i).split(",");
             String[] productsInfo = attr[1].split(";");
-            String[] product = productsInfo[index].split("-");
-            product[0] = newName;
+            if (productsInfo[0].equals(store.getStoreName())) {
+                String[] product = productsInfo[index].split("-"); // index
+                product[0] = newName;
+                productsInfo[index] = String.join("-", product);
+                attr[1] = String.join(";", productsInfo);
+                String newline = String.join(",", attr);
+                allLines.set(i, newline);
+            }
         }
 
         // rewrite everything
@@ -247,16 +253,22 @@ public class CSVWriter {
         bfw.close();
     }
 
-    public void writeProductAmount(int index, Integer newAmount) throws IOException {
+    public void writeProductAmount(Store store, int index, Integer newAmount) throws IOException {
 
         List<String> allLines = csvReader.readAllLines(storeFile);
 
         String amountStr = String.valueOf(newAmount);
-        for (String line : allLines) {
-            String[] attr = line.split(",");
+        for (int i = 0; i < allLines.size(); i++) {
+            String[] attr = allLines.get(i).split(",");
             String[] productsInfo = attr[1].split(";");
-            String[] product = productsInfo[index].split("-");
-            product[1] = amountStr;
+            if (productsInfo[0].equals(store.getStoreName())) {
+                String[] product = productsInfo[index].split("-"); // index
+                product[1] = amountStr;
+                productsInfo[index] = String.join("-", product);
+                attr[1] = String.join(";", productsInfo);
+                String newline = String.join(",", attr);
+                allLines.set(i, newline);
+            }
         }
 
         BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
@@ -272,16 +284,22 @@ public class CSVWriter {
         bfw.close();
     }
 
-    public void writeProductPrice(int index, Double newPrice) throws IOException {
+    public void writeProductPrice(Store store, int index, Double newPrice) throws IOException {
 
         List<String> allLines = csvReader.readAllLines(storeFile);
         BufferedWriter bfw = new BufferedWriter(new FileWriter(storeFile));
         String priceStr = String.valueOf(newPrice);
-        for (String line : allLines) {
-            String[] attr = line.split(",");
+        for (int i = 0; i < allLines.size(); i++) {
+            String[] attr = allLines.get(i).split(",");
             String[] productsInfo = attr[1].split(";");
-            String[] product = productsInfo[index].split("-"); // index
-            product[2] = priceStr;
+            if (productsInfo[0].equals(store.getStoreName())) {
+                String[] product = productsInfo[index].split("-"); // index
+                product[2] = priceStr;
+                productsInfo[index] = String.join("-", product);
+                attr[1] = String.join(";", productsInfo);
+                String newline = String.join(",", attr);
+                allLines.set(i, newline);
+            }
         }
 
         // rewrite everything
@@ -300,8 +318,8 @@ public class CSVWriter {
 
         List<String> allLines = csvReader.readAllLines(storeFile);
 
-        for (String line : allLines) {
-            String[] attr = line.split(","); // each store's info
+        for (int i = 0; i < allLines.size(); i++) {
+            String[] attr = allLines.get(i).split(","); // each store's info
 
             if (attr[0].equals(store.getStoreName())) { // find which store added new product
                 String[] products = attr[1].split(";");
@@ -310,6 +328,9 @@ public class CSVWriter {
                 productList.add(newProductInfo);
                 String allProducts = String.join(";", productList);
                 attr[1] = allProducts;
+                String newline = String.join(",", attr);
+                allLines.set(i, newline);
+                break;
             }
         }
 
@@ -330,14 +351,18 @@ public class CSVWriter {
 
         List<String> allLines = csvReader.readAllLines(storeFile);
 
-        for (String line : allLines) {
-            String[] attr = line.split(",");
-            if (attr[0].equals(store.getStoreName())) {
+        for (int i = 0; i < allLines.size(); i++) {
+            String[] attr = allLines.get(i).split(","); // each store's info
+
+            if (attr[0].equals(store.getStoreName())) { // find which store added new product
                 String[] products = attr[1].split(";");
-                List<String> productList = Arrays.asList(products);
+                List<String> productList = new ArrayList<>(Arrays.asList(products));
                 productList.remove(index);
                 String allProducts = String.join(";", productList);
                 attr[1] = allProducts;
+                String newline = String.join(",", attr);
+                allLines.set(i, newline);
+                break;
             }
         }
 
