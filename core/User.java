@@ -17,8 +17,8 @@ public class User {
     private String role;
     private HashMap<User, ConversationHistory> conversations; // each user can get their conversation history
     public static HashMap<String, User> usersByUsername = new HashMap<>(); // distinguished by their name
-    private List<String> blockList;
-    private List<String> invisList;
+    public List<String> blockList;
+    public List<String> invisList;
     private List<String> conFilenames;
 
     public User(String username, String password, String role) {
@@ -72,7 +72,7 @@ public class User {
     public void setConFilenames(List<String> list) {
         conFilenames = list;
     }
-
+    
     public HashMap<User, ConversationHistory> getConversations() {
         return conversations;
     }
@@ -88,4 +88,5 @@ public class User {
     public List<String> getConFilenames() {
         return conFilenames;
     }
+
 }
