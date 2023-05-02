@@ -96,6 +96,10 @@ public class SellerSMGWindow {
                 public void actionPerformed(ActionEvent actionEvent) {
                     String newMSG = messageArea.getText();
                     int msgIndex = messages.indexOf(message);
+                    String tempMSG = messages.get(msgIndex);
+                    String[] attr = tempMSG.split("& . _ . &");
+                    attr[2] = newMSG;
+                    newMSG = attr[0] + "& . _ . &" + attr[1] + "& . _ . &" + attr[2];
                     messages.set(msgIndex, newMSG);
 
                     messageArea.setEditable(false);
