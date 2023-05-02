@@ -4,13 +4,8 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import utils.DataManager;
 
-import core.Customer;
-import core.Seller;
-import core.Store;
-import core.User;
 
 /**
  * This class is the server that will interact with the client
@@ -25,25 +20,9 @@ import core.User;
 
 public class Server{
 
-    private static final String CUSTOMER_OPTIONS = "1 - Select a store, 2 - "; //need to decide on options for customers
-    private static final String SELLER_OPTIONS = "1 - Select a customer, 2 - , ? - Create a new store"; //need to decide on options for sellers
-
-    private static ArrayList<Customer> customers; //official fat list of customer accounts
-    private static ArrayList<Seller> sellers; //official fat list of seller accounts
-    private static ArrayList<Store> stores; //list of store accounts that will be built once the program starts
-    private static String customersFileName = "customers.csv";
-    private static String sellersFileName = "sellers.csv";
-    private static HashMap<User, String> tempBlocked;
-    private static HashMap<User, String> tempInvis;
     private static ArrayList<ServerThread> serverThreads;
 
     public static void main(String [] args) {
-        
-        /*
-        *   Integer newPort = getSmallestAvailablePort();
-            ServerSocket serverSocket = new ServerSocket(newPort);
-            usedPorts.add(newPort);
-        */
 
         serverThreads = new ArrayList<ServerThread>();
         try {
@@ -65,58 +44,6 @@ public class Server{
             e.printStackTrace();
         }
 
-    }
-
-    //this is a utility method that will attempt to cast a string to an integer. If unsuccessful, it will return a -1
-    private static int castToInt(String str) {
-        int result = -1;
-        try{
-            Integer.parseInt(str);
-        } catch(NumberFormatException e)
-        {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    //this is a utility method and will check if the int is within the correct range
-    private static boolean isInRange(int value, int lower, int upper) {
-        if(value >= lower && value <= upper)
-        {
-            return true;
-        } else
-        {
-            return false;
-        }
-    }
-
-    //utility method to write all items held in the data structures to CSV files
-    private static void writeAllToCSV()
-    {
-        writeEntireCustomerList(customersFileName, customers);
-    }
-
-    private static void writeEntireCustomerList(String filename, ArrayList<Customer> customers)
-    {
-        try
-        {
-            File f = new File(filename);
-            PrintWriter pw = new PrintWriter(f);
-            pw.write("username,password,conversations,blocklist,invisList\n");
-            for(Customer customer: customers)
-            {
-                String str = customer.getUsername() + ",";
-                str += customer.getPassword() + ",";
-                //str += getConversationsString(customer.getConversations()) + ",";
-                //str += getBlockedUsersString(customer.getBlockedList()) + ",";
-                //str += getInvisibleListString(customer.getInvisibleToList());
-                pw.write(str+"\n");
-                pw.flush();
-            }
-        } catch(IOException e)
-        {
-            e.printStackTrace();
-        }
     }
 
 }

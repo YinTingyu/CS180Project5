@@ -1,3 +1,6 @@
+package server;
+
+import core.*;
 import java.io.*;
 import java.util.Scanner;
 /**
