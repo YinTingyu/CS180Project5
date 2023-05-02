@@ -74,6 +74,47 @@ public class DataManager {
 
     public void writeConversation(String filename, List<String> newMessages) {
 
+        String[] participants = filename.split("&&");
+        String sender = participants[0];
+        int n = participants[1].length();
+        String recipient = participants[1].substring(0, n - 4);
+        User user = userMap.get(sender); // find the sender
+
+        if (user instanceof Customer) {
+            // the recipient get from the filename should be a store name
+            Store store = storeMap.get(recipient);
+            Seller seller = store.getSeller();
+            ConversationHistory sellerConHis = conversationHistoryMap.get(seller);
+
+            // filename as key
+            Map<String, List<Message>> conMap = sellerConHis.getConversationMap();
+            List<Message> messages = conMap.get(filename);
+
+            for (String message : newMessages) {
+                String[] attrs = message.split("& . _ . &");
+                String time = attrs[0];
+                String content = attrs[1];
+                Message newMessage = new Message(sender, content, time);
+                messages.add(newMessage);
+            }
+
+        } else if (user instanceof Seller) {
+            // the recipient get from the filename should be a customer
+            Customer customer = (Customer) userMap.get(recipient);
+            ConversationHistory customerConHis = conversationHistoryMap.get(customer);
+
+            Map<String, List<Message>> conMap = customerConHis.getConversationMap();
+            List<Message> messages = conMap.get(filename);
+
+            for (String message : newMessages) {
+                String[] attrs = message.split("& . _ . &");
+                String time = attrs[0];
+                String content = attrs[1];
+                Message newMessage = new Message(sender, content, time);
+                messages.add(newMessage);
+            }
+        }
+
         try {
             csvWriter.updateConversationFile(filename, newMessages);
         } catch (IOException e) {
@@ -98,25 +139,25 @@ public class DataManager {
         }
     }
 
-    public void writeProductName(int index, String newName) {
+    public void writeProductName(Store store, int index, String newName) {
         try {
-            csvWriter.writeProductName(index, newName);
+            csvWriter.writeProductName(store, index, newName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void writeProductAmount(int index, Integer newAmount) {
+    public void writeProductAmount(Store store, int index, Integer newAmount) {
         try {
-            csvWriter.writeProductAmount(index, newAmount);
+            csvWriter.writeProductAmount(store, index, newAmount);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void writeProductPrice(int index, Double newPrice) {
+    public void writeProductPrice(Store store, int index, Double newPrice) {
         try {
-            csvWriter.writeProductPrice(index, newPrice);
+            csvWriter.writeProductPrice(store, index, newPrice);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -141,6 +182,7 @@ public class DataManager {
 
     public void addStore(Store store) {
         storeMap.put(store.getStoreName(), store);
+
     }
 
     public void addBlock(User user, String blocked) {
