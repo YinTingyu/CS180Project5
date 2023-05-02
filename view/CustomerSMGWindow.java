@@ -9,10 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -27,10 +24,35 @@ import java.util.List;
  * @version April 15, 2023
  */
 public class CustomerSMGWindow {
+    //codes
+    private static final String CREATE_NEW_ACCOUNT_OPTION_CODE = "AA01";
+    private static final String LOG_IN_OPTION_CODE = "AA02";
+    private static final String EXIT_FIRST_MENU_OPTION_CODE = "AA03";
+
+    private static final String CONTACT_USER_CODE = "BB01";
+    private static final String BLOCK_USER_CODE = "BB02";
+    private static final String SET_INVISIBLE_CODE = "BB03";
+    private static final String VIEW_DASHBOARD_CODE = "BB04";
+    private static final String EXPORT_FILE_CODE = "BB05";
+    private static final String IMPORT_FILE_CODE = "BB06";
+    private static final String CREATE_STORE_CODE = "BB067";
+
+    private static final String QUERY_USER_BLOCKED = "CC01";
+    private static final String QUERY_CONVERSATION_STRING = "CC03";
+
+    private static final String CONFIRMATION_CODE = "OKAY";
+    private static final String REJECTION_CODE = "NOT OKAY";
+    private static final String FULL_EXIT_CODE = "FULL EXIT";
+    private static final String REFRESH_CODE = "REFRESH";
+    private static final String CUSTOMER_TYPE = "Customer";
+    private static final String SELLER_TYPE = "Seller";
+
     private CustomerMenu customerMenu;
     private Store store;
     private Customer customer;
     private Socket socket;
+    private BufferedReader bfr;
+    private PrintWriter pw;
     static JTextField inputMessage;
 
     List<String> messages = new ArrayList<>();
@@ -41,6 +63,13 @@ public class CustomerSMGWindow {
         this.store = store;
         this.customer = customer;
         this.socket = socket;
+        try {
+            bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            pw = new PrintWriter(socket.getOutputStream());            
+        } catch(Exception e) {
+
+        }
+
     }
 
     private void updateConversation(List<String> messages) throws IOException {
@@ -54,7 +83,6 @@ public class CustomerSMGWindow {
 
 
         for (String message : messages) {
-            System.out.println(message);
             String[] msgInfo = message.split("& . _ . &");
 
             // use labels to hold sender's name and timestamp
@@ -162,7 +190,7 @@ public class CustomerSMGWindow {
         CSVReader reader = new CSVReader();
         CSVWriter writer = new CSVWriter(customer);
 
-        String filename = reader.getFilenames(customer.getUsername(), store.getStoreName());
+        String filename = reader.getFilenames(store.getSeller().getUsername(), customer.getUsername());
         //String otherFilename = reader.getFilenames(store.getSeller().getUsername(), customer.getUsername());
         File file = new File(filename);
         //File otherFile = new File(otherFilename);
@@ -249,14 +277,28 @@ public class CustomerSMGWindow {
         JPanel sendButtonPanel = new JPanel(new FlowLayout());
         JButton sendButton = new JButton("Send");
         JButton importButton = new JButton("Import txt"); //file import stuff
-        sendButtonPanel.add(importButton);
+        JButton refreshButton = new JButton("Refresh");
         sendButtonPanel.add(sendButton);
+        sendButtonPanel.add(importButton);
+        sendButtonPanel.add(refreshButton);
         inputPanel.add(sendButtonPanel, BorderLayout.EAST);
+
         importButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                        FileImportGUI fio = new FileImportGUI(customer, socket);
-                    }
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                FileImportGUI fio = new FileImportGUI(customer, socket);
+            }
+        });
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    messages = reader.readMessages(filename);
+                    updateConversation(messages);
+                } catch (Exception e) {
+
+                }
+            }
         });
         sendButton.addActionListener(new ActionListener() {
             @Override

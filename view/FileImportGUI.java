@@ -28,8 +28,6 @@ public class FileImportGUI extends JFrame implements ActionListener {
         // create the components
         fileNameReadLabel = new JLabel("File to read from:");
         fileNameReadField = new JTextField();
-        storeLabel = new JLabel("Store:");
-        storeField = new JTextField();
         desiredUserLabel = new JLabel("Desired user:");
         desiredUserField = new JTextField();
         sendButton = new JButton("Send");
@@ -37,8 +35,6 @@ public class FileImportGUI extends JFrame implements ActionListener {
         // add the components to the JFrame
         add(fileNameReadLabel);
         add(fileNameReadField);
-        add(storeLabel);
-        add(storeField);
         add(desiredUserLabel);
         add(desiredUserField);
         add(sendButton);
@@ -54,9 +50,8 @@ public class FileImportGUI extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == sendButton) {
             String fileNameRead = fileNameReadField.getText();
-            String store = storeField.getText();
             String desiredUser = desiredUserField.getText();
-            FileImport fileImport = new FileImport(fileNameRead, store, user, desiredUser, socket);
+            FileImport fileImport = new FileImport(fileNameRead, user, desiredUser, socket);
             JOptionPane.showMessageDialog(null,"Imported successfully");
             dispose(); // close the JFrame
         }

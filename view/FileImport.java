@@ -14,7 +14,6 @@ import java.net.*;
  */
 public class FileImport {
     private String fileNameRead;
-    private String store;
     private User user;
     private String desiredUser;
     private String fileWrite;
@@ -32,14 +31,13 @@ public class FileImport {
 //        writeToFile(this.fileWrite);
 //    }
 
-    public FileImport(String fileNameRead, String store, User user, String userName, Socket socket){
+    public FileImport(String fileNameRead, User user, String userName, Socket socket){
         try{
             pw = new PrintWriter(socket.getOutputStream());
         }catch (Exception e){
             e.printStackTrace();
         }
         this.fileNameRead = fileNameRead;
-        this.store = store;
         this.user = user;
         this.desiredUser = userName;
 //      this.fileWrite = findCSVFile(this.user);

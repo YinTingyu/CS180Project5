@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.net.*;
 /**
  * Customer's send message interface
  *
@@ -26,16 +27,18 @@ public class SellerSMGWindow {
     private Seller seller;
     private Customer customer;
     private SellerMenu sellerMenu;
+    private Socket socket;
     static JTextField inputMessage;
 
     List<String> messages = new ArrayList<>();
 
     private JPanel conversationPanel = new JPanel();
 
-    public SellerSMGWindow(SellerMenu sellerMenu, Customer customer, Seller seller) {
+    public SellerSMGWindow(SellerMenu sellerMenu, Customer customer, Seller seller, Socket socket) {
         this.sellerMenu = sellerMenu;
         this.customer = customer;
         this.seller = seller;
+        this.socket = socket;
     }
 
     private void updateConversation(List<String> messages) throws IOException {
@@ -198,7 +201,30 @@ public class SellerSMGWindow {
 
         JPanel sendButtonPanel = new JPanel(new FlowLayout());
         JButton sendButton = new JButton("Send");
+        JButton importButton = new JButton("Import txt"); //file import stuff
+        JButton refreshButton = new JButton("Refresh");
         sendButtonPanel.add(sendButton);
+        sendButtonPanel.add(importButton);
+        sendButtonPanel.add(refreshButton);
+        inputPanel.add(sendButtonPanel, BorderLayout.EAST);
+
+        importButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                FileImportGUI fio = new FileImportGUI(customer, socket);
+            }
+        });
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    messages = reader.readMessages(filename);
+                    updateConversation(messages);
+                } catch (Exception e) {
+
+                }
+            }
+        });
         inputPanel.add(sendButtonPanel, BorderLayout.EAST);
         sendButton.addActionListener(new ActionListener() {
             @Override

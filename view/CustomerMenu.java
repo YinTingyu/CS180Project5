@@ -2,6 +2,7 @@ package view;
 
 import core.Customer;
 import core.Seller;
+import server.FileExport;
 import utils.CSVReader;
 import utils.CSVWriter;
 
@@ -28,6 +29,30 @@ public class CustomerMenu extends Menu {
 
     private static final String VIEW_ALL_STORES = "View all the stores";
     private static final String EXPORT_FILE = "Export File";
+
+    //Codes
+    private static final String CREATE_NEW_ACCOUNT_OPTION_CODE = "AA01";
+    private static final String LOG_IN_OPTION_CODE = "AA02";
+    private static final String EXIT_FIRST_MENU_OPTION_CODE = "AA03";
+
+    private static final String CONTACT_USER_CODE = "BB01";
+    private static final String BLOCK_USER_CODE = "BB02";
+    private static final String SET_INVISIBLE_CODE = "BB03";
+    private static final String VIEW_DASHBOARD_CODE = "BB04";
+    private static final String EXPORT_FILE_CODE = "BB05";
+    private static final String IMPORT_FILE_CODE = "BB06";
+    private static final String CREATE_STORE_CODE = "BB067";
+
+    private static final String QUERY_USER_BLOCKED = "CC01";
+    private static final String QUERY_USER_INVISIBLE = "CC02";
+    private static final String QUERY_CONVERSATION_STRING = "CC03";
+
+    private static final String CONFIRMATION_CODE = "OKAY";
+    private static final String REJECTION_CODE = "NOT OKAY";
+    private static final String FULL_EXIT_CODE = "FULL EXIT";
+    private static final String REFRESH_CODE = "REFRESH";
+    private static final String CUSTOMER_TYPE = "Customer";
+    private static final String SELLER_TYPE = "Seller";
 
     public String message;
     private String filename = "customers.csv";
@@ -77,15 +102,20 @@ public class CustomerMenu extends Menu {
 
         Map<String, Seller> sellerMap = csvReader.readSellers();
 
+        sellerList = new ArrayList<String>();
         for (String seller : sellerMap.keySet()) {
-            sellerList.add(seller);
+            pw.println(QUERY_USER_INVISIBLE + "$" + customer.getUsername() + "$" + seller);
+            pw.flush();
+            if(bfr.readLine().equals(CONFIRMATION_CODE)) {
+                sellerList.add(seller);
+            }
         }
 
         blockList = csvReader.getBlockList(customer); // load all the blocked users
         invisList = csvReader.getInvisList(customer); // load all the invisible users
 
         JFrame frame = new JFrame("Customer Menu");
-        frame.setSize(new Dimension(600, 600));
+        frame.setSize(new Dimension(700, 600));
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setLayout(new BorderLayout());
@@ -209,10 +239,12 @@ public class CustomerMenu extends Menu {
         JButton viewAllStores = new JButton(VIEW_ALL_STORES);
         JButton logOutButton = new JButton(LOG_OUT);
         JButton exportFileButton = new JButton(EXPORT_FILE);
+        JButton refreshButton = new JButton("Refresh");
         bottomPanel.add(viewAllStores);
         bottomPanel.add(viewBlockList);
         bottomPanel.add(viewInvisibleList);
         bottomPanel.add(exportFileButton);
+        bottomPanel.add(refreshButton);
         bottomPanel.add(logOutButton);
 
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
@@ -229,10 +261,24 @@ public class CustomerMenu extends Menu {
             }
         });
 
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    System.out.println("refreshing");
+                    frame.dispose();
+                    run(customer);
+                } catch(Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        });
+
         exportFileButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 try{
-
+                    new FileExportGUI(customer, socket);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

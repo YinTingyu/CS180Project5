@@ -32,6 +32,7 @@ import java.util.Map;
 public class SellerMenu extends Menu {
     private static final String MANAGE_STORE = "Manage my store";
     private static final String BLOCKED = "You are blocked!";
+    private static final String EXPORT_FILE = "Export File";
 
     //Codes
     private static final String CREATE_NEW_ACCOUNT_OPTION_CODE = "AA01";
@@ -54,6 +55,7 @@ public class SellerMenu extends Menu {
     private static final String SELLER_TYPE = "Seller";
 
     private static final String QUERY_USER_BLOCKED = "CC01";
+    private static final String QUERY_USER_INVISIBLE = "CC02";
 
     public String message;
     private String filename = "sellers.csv";
@@ -81,7 +83,6 @@ public class SellerMenu extends Menu {
         try {
             sellerStore = csvReader.getSellerStores(seller);        
             this.socket = inputSocket;
-            System.out.println(inputSocket);
             bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             pw = new PrintWriter(socket.getOutputStream());
         } catch (IOException e) {
@@ -91,7 +92,7 @@ public class SellerMenu extends Menu {
 
     public void openSellerSMGWindow(SellerMenu sellerMenu, Customer customer, Seller seller) {
 
-        SellerSMGWindow sendWindow = new SellerSMGWindow(sellerMenu, customer, seller);
+        SellerSMGWindow sendWindow = new SellerSMGWindow(sellerMenu, customer, seller, socket);
         try {
             sendWindow.run();
         } catch (IOException e) {
@@ -118,15 +119,21 @@ public class SellerMenu extends Menu {
         sellerStore = seller.getStores();
         Map<String, Customer> customerMap = csvReader.readCustomers();
 
+        sellerList = new ArrayList<String>();
+
         for (String customer : customerMap.keySet()) {
-            sellerList.add(customer);
+            pw.println(QUERY_USER_INVISIBLE + "$" + seller.getUsername() + "$" + customer);
+            pw.flush();
+            if(bfr.readLine().equals(CONFIRMATION_CODE)) {
+                sellerList.add(customer);
+            }
         }
 
         blockList = csvReader.getBlockList(seller); // load all the blocked users
         invisList = csvReader.getInvisList(seller); // load all the invisible users
 
         JFrame frame = new JFrame("Seller Menu");
-        frame.setSize(new Dimension(500, 600));
+        frame.setSize(new Dimension(700, 600));
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setLayout(new BorderLayout());
@@ -274,9 +281,13 @@ public class SellerMenu extends Menu {
         JButton viewInvisibleList = new JButton(INVISIBLE_LIST);
         JButton manageStores = new JButton(MANAGE_STORE); // manage stores
         JButton logOutButton = new JButton(LOG_OUT);
+        JButton exportFileButton = new JButton(EXPORT_FILE);
+        JButton refreshButton = new JButton("Refresh");
         bottomPanel.add(manageStores);
         bottomPanel.add(viewBlockList);
         bottomPanel.add(viewInvisibleList);
+        bottomPanel.add(exportFileButton);
+        bottomPanel.add(refreshButton);
         bottomPanel.add(logOutButton);
 
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
@@ -292,6 +303,31 @@ public class SellerMenu extends Menu {
                 }
             }
         });
+        
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    System.out.println("refreshing");
+                    frame.dispose();
+                    run(seller);
+                } catch(Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        });
+
+        exportFileButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                try{
+                    new FileExportGUI(seller, socket);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
 
         viewBlockList.addActionListener(new ActionListener() {
             @Override

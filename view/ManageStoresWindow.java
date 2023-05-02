@@ -41,7 +41,7 @@ public class ManageStoresWindow {
         CSVWriter writer = new CSVWriter(seller);
         sellerStores = reader.getSellerStores(seller);
 
-        JFrame frame = new JFrame("Manege My Stores");
+        JFrame frame = new JFrame("Manage My Stores");
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setSize(new Dimension(800, 600));
@@ -94,12 +94,12 @@ public class ManageStoresWindow {
                         price.add(newPrice);
                         Store newStore = new Store(storeName, product, amount, price, seller);
                         sellerStores.add(newStore);
-
                         List<String> storeList = new ArrayList<>();
                         for (Store store : sellerStores) {
                             storeList.add(store.getStoreName());
                         }
 
+                        //write new store file
                         writer.writeStores(storeList);
                         writer.writeNewProduct(newStore, newProduct, amountStr, priceStr);
 
@@ -278,31 +278,56 @@ public class ManageStoresWindow {
                         int selectedCol = table.getSelectedColumn();
 
                         if (selectedRow != -1) {
-                            String newName = (String) tableModel.getValueAt(selectedRow, 0);
-                            int newAmount = (Integer) tableModel.getValueAt(selectedRow, 1);
-                            double newPrice = (Double) tableModel.getValueAt(selectedRow, 2);
+                            Object getNewValue = tableModel.getValueAt(selectedRow, selectedCol);
 
-                            try {
-                                products.set(selectedRow, newName);
-                                writer.writeProductName(store, selectedRow, newName);
+                            if (selectedCol == 0) { // name of product
 
-                                amounts.set(selectedRow, newAmount);
-                                writer.writeProductAmount(store, selectedRow, newAmount);
+                                String name = (String) getNewValue;
+                                // write csv
+                                try {
+                                    products.set(selectedRow, name);
 
-                                prices.set(selectedRow, newPrice);
-                                writer.writeProductPrice(store, selectedRow, newPrice);
-                                
-                            } catch (NumberFormatException e) {
-                                // Handle invalid double input
-                                JOptionPane.showMessageDialog(null,
-                                        INVALID_PRICE + "\n" + INVALID_AMOUNT);
-                                
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
+                                    writer.writeProductName(store, selectedRow, name);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+
+                            } else if (selectedCol == 1) { // amount of product
+
+                                Integer am = (Integer) getNewValue;
+                                try {
+                                    amounts.set(selectedRow, am);
+
+                                    // write csv
+                                    writer.writeProductAmount(store, selectedRow, am);
+
+                                } catch (NumberFormatException e) {
+                                    // Handle invalid integer input
+                                    JOptionPane.showMessageDialog(null, INVALID_AMOUNT);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+                            } else if (selectedCol == 2) { // price
+
+                                Double pr = (Double) getNewValue;
+                                try {
+                                    prices.set(selectedRow, pr);
+
+                                    // write csv
+                                    writer.writeProductPrice(store, selectedRow, pr);
+
+                                } catch (NumberFormatException e) {
+                                    // Handle invalid double input
+                                    JOptionPane.showMessageDialog(null, INVALID_PRICE);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+
                             }
-                            
-                            
                         }
+
 
                     }
                 });

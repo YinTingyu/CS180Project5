@@ -77,7 +77,6 @@ public class LoginGUI implements ActionListener {
     }
 
     public void openSellerMenu(Seller seller, Socket socket) {
-        System.out.println("open seller");
         SellerMenu sellerMenu = new SellerMenu(seller, socket);
         try {
             sellerMenu.showSellerMenu(seller);
@@ -330,7 +329,6 @@ public class LoginGUI implements ActionListener {
         try{
             bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             pw = new PrintWriter(socket.getOutputStream());
-            System.out.println("Socket has been set");
         } catch(Exception e) {
             e.printStackTrace();
         }

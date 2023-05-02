@@ -1,3 +1,6 @@
+package view;
+
+import core.*;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -8,6 +11,8 @@ import java.net.*;
 import javax.swing.*;
 
 public class FileExportGUI extends JFrame implements ActionListener {
+
+    private static final String REJECTION_CODE = "NOT OKAY";
 
     private String name;
     private User user;
@@ -75,17 +80,31 @@ public class FileExportGUI extends JFrame implements ActionListener {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String line = bufferedReader.readLine();
             bufferedReader.close();
-            File file = new File(exportedFileName);
-            file.createNewFile();
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));
-            bufferedWriter.write(line);
-            bufferedWriter.flush();
-            bufferedWriter.close();
-            JLabel successLabel = new JLabel("Conversation history exported to " + exportedFileName);
-            JPanel successPanel = new JPanel(new BorderLayout());
-            successPanel.add(successLabel, BorderLayout.CENTER);
-            JOptionPane.showMessageDialog(this, successPanel,
-                    "Success", JOptionPane.INFORMATION_MESSAGE);
+            if(!line.equals(REJECTION_CODE)) {
+                String[] lines = line.split(";;;");
+
+                File file = new File(exportedFileName);
+                file.createNewFile();
+                BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));
+                for(String e: lines)
+                {
+                    bufferedWriter.write(e);
+                    bufferedWriter.newLine();
+                }
+                bufferedWriter.flush();
+                bufferedWriter.close();
+                JLabel successLabel = new JLabel("Conversation history exported to " + exportedFileName);
+                JPanel successPanel = new JPanel(new BorderLayout());
+                successPanel.add(successLabel, BorderLayout.CENTER);
+                JOptionPane.showMessageDialog(this, successPanel,
+                        "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JLabel errorLabel = new JLabel("File does not exist");
+                JPanel errorPanel = new JPanel(new BorderLayout());
+                errorPanel.add(errorLabel, BorderLayout.CENTER);
+                JOptionPane.showMessageDialog(this, errorPanel, "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            
         } catch (Exception e) {
             e.printStackTrace(); // only for testing
         }
