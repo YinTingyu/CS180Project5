@@ -278,56 +278,31 @@ public class ManageStoresWindow {
                         int selectedCol = table.getSelectedColumn();
 
                         if (selectedRow != -1) {
-                            Object getNewValue = tableModel.getValueAt(selectedRow, selectedCol);
+                            String newName = (String) tableModel.getValueAt(selectedRow, 0);
+                            int newAmount = (Integer) tableModel.getValueAt(selectedRow, 1);
+                            double newPrice = (Double) tableModel.getValueAt(selectedRow, 2);
 
-                            if (selectedCol == 0) { // name of product
+                            try {
+                                products.set(selectedRow, newName);
+                                writer.writeProductName(store, selectedRow, newName);
 
-                                String name = (String) getNewValue;
-                                // write csv
-                                try {
-                                    products.set(selectedRow, name);
+                                amounts.set(selectedRow, newAmount);
+                                writer.writeProductAmount(store, selectedRow, newAmount);
 
-                                    writer.writeProductName(store, selectedRow, name);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-
-
-                            } else if (selectedCol == 1) { // amount of product
-
-                                Integer am = (Integer) getNewValue;
-                                try {
-                                    amounts.set(selectedRow, am);
-
-                                    // write csv
-                                    writer.writeProductAmount(store, selectedRow, am);
-
-                                } catch (NumberFormatException e) {
-                                    // Handle invalid integer input
-                                    JOptionPane.showMessageDialog(null, INVALID_AMOUNT);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-
-                            } else if (selectedCol == 2) { // price
-
-                                Double pr = (Double) getNewValue;
-                                try {
-                                    prices.set(selectedRow, pr);
-
-                                    // write csv
-                                    writer.writeProductPrice(store, selectedRow, pr);
-
-                                } catch (NumberFormatException e) {
-                                    // Handle invalid double input
-                                    JOptionPane.showMessageDialog(null, INVALID_PRICE);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-
+                                prices.set(selectedRow, newPrice);
+                                writer.writeProductPrice(store, selectedRow, newPrice);
+                                
+                            } catch (NumberFormatException e) {
+                                // Handle invalid double input
+                                JOptionPane.showMessageDialog(null,
+                                        INVALID_PRICE + "\n" + INVALID_AMOUNT);
+                                
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
                             }
+                            
+                            
                         }
-
 
                     }
                 });
