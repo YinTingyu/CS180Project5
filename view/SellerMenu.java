@@ -6,6 +6,8 @@ import core.Store;
 import utils.CSVReader;
 import utils.CSVWriter;
 
+import java.io.*;
+import java.net.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -13,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,35 +31,66 @@ import java.util.Map;
  */
 public class SellerMenu extends Menu {
     private static final String MANAGE_STORE = "Manage my store";
+    private static final String BLOCKED = "You are blocked!";
+
+    //Codes
+    private static final String CREATE_NEW_ACCOUNT_OPTION_CODE = "AA01";
+    private static final String LOG_IN_OPTION_CODE = "AA02";
+    private static final String EXIT_FIRST_MENU_OPTION_CODE = "AA03";
+
+    private static final String CONTACT_USER_CODE = "BB01";
+    private static final String BLOCK_USER_CODE = "BB02";
+    private static final String SET_INVISIBLE_CODE = "BB03";
+    private static final String VIEW_DASHBOARD_CODE = "BB04";
+    private static final String EXPORT_FILE_CODE = "BB05";
+    private static final String IMPORT_FILE_CODE = "BB06";
+    private static final String CREATE_STORE_CODE = "BB067";
+
+    private static final String CONFIRMATION_CODE = "OKAY";
+    private static final String REJECTION_CODE = "NOT OKAY";
+    private static final String FULL_EXIT_CODE = "FULL EXIT";
+    private static final String REFRESH_CODE = "REFRESH";
+    private static final String CUSTOMER_TYPE = "Customer";
+    private static final String SELLER_TYPE = "Seller";
+
+    private static final String QUERY_USER_BLOCKED = "CC01";
 
     public String message;
-    private String filename = "./src/sellers.csv";
+    private String filename = "sellers.csv";
     private SellerMenu sellerMenu;
     private CSVReader csvReader;
 
     public Seller seller;
     public List<String> blockList;
     public List<String> invisList;
-    public List<String> customerList = new ArrayList<>();
+    public List<String> sellerList = new ArrayList<>();
     public List<Store> sellerStore;
     private JPanel invisiblePanel = new JPanel();
     private JPanel blockPanel = new JPanel();
+    private Socket socket;
+    private BufferedReader bfr;
+    private PrintWriter pw;
 
     public void showSellerMenu(Seller seller) throws IOException { // this is used when login and when go back
         run(this.seller);
     }
 
-    public SellerMenu(Seller seller) { // used when login gui instance the CustomerMenu
+    public SellerMenu(Seller seller, Socket inputSocket) { // used when login gui instance the CustomerMenu
         this.seller = seller;
         this.csvReader = new CSVReader();
         try {
-            sellerStore = csvReader.getSellerStores(seller);
+            sellerStore = csvReader.getSellerStores(seller);        
+            this.socket = inputSocket;
+            System.out.println(inputSocket);
+            bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            pw = new PrintWriter(socket.getOutputStream());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void openSellerSMGWindow(SellerMenu sellerMenu, Customer customer, Seller seller) {
+
         SellerSMGWindow sendWindow = new SellerSMGWindow(sellerMenu, customer, seller);
         try {
             sendWindow.run();
@@ -84,14 +118,8 @@ public class SellerMenu extends Menu {
         sellerStore = seller.getStores();
         Map<String, Customer> customerMap = csvReader.readCustomers();
 
-        // check other side's invisible list
         for (String customer : customerMap.keySet()) {
-            customerList.add(customer);
-            Customer cus = customerMap.get(customer);
-            List<String> otherSide = csvReader.getInvisList(cus);
-            if (otherSide.contains(seller.getUsername())) {
-                customerList.remove(customer);
-            }
+            sellerList.add(customer);
         }
 
         blockList = csvReader.getBlockList(seller); // load all the blocked users
@@ -151,7 +179,7 @@ public class SellerMenu extends Menu {
         JPanel friendPanel = new JPanel();
         friendPanel.setLayout(new BoxLayout(friendPanel, BoxLayout.Y_AXIS));
 
-        for (String friend : customerList) {
+        for (String friend : sellerList) {
 
             JPanel singleFriendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JLabel friendLabel = new JLabel(friend);
@@ -214,11 +242,20 @@ public class SellerMenu extends Menu {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
 
-                    if (blockList.contains(seller.getUsername())) {
-                        JOptionPane.showMessageDialog(null, "You have been blocked!",
-                                "Error", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        openSellerSMGWindow(sellerMenu, customerMap.get(friend), seller);
+                    pw.println(QUERY_USER_BLOCKED + "$" + seller.getUsername() + "$" + friend);
+                    pw.flush();
+                    try {
+                        if(bfr.readLine().equals(REJECTION_CODE)) {
+                            JOptionPane.showMessageDialog(null, "You have been blocked!",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                        } else if (blockList.contains(seller.getUsername())) {
+                            JOptionPane.showMessageDialog(null, "User is blocked!",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            openSellerSMGWindow(sellerMenu, customerMap.get(friend), seller);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             });
