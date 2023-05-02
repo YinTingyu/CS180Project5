@@ -155,9 +155,9 @@ public class ServerThread extends Thread {
                     String otherFilename = recipientName + "&&" + senderName + ".csv";
                     File other = new File(otherFilename);
                     if(other.exists()) {
-                        dataManager.writeMessage(otherFilename, message);
+                        dataManager.writeMessage(otherFilename, message, senderName);
                     } else {
-                        dataManager.writeMessage(filename, message);
+                        dataManager.writeMessage(filename, message, senderName);
                     }
                     //update on the gui's
                     
