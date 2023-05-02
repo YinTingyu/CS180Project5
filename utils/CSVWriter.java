@@ -27,9 +27,9 @@ public class CSVWriter {
     public CSVWriter() {
 
     }
-    private String customerFile = "./src/customers.csv";
-    private String sellerFile = "./src/sellers.csv";
-    private String storeFile = "./src/" + "stores" + ".csv";
+    private String customerFile = "customers.csv";
+    private String sellerFile = "sellers.csv";
+    private String storeFile = "" + "stores" + ".csv";
 
 
 
@@ -53,7 +53,21 @@ public class CSVWriter {
 
     }
 
+    public void writeMessage(String conversationFile, String message, String senderName) throws IOException {
+        //in this method, the message string will not contain the delimiters
+        LocalDateTime now = LocalDateTime.now();
+        String timestamp = now.format(TIMESTAMP_FORMATTER);
+        String username = senderName;
 
+        File f = new File(conversationFile);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(f, true));
+
+        String formattedMessage = String.format("%s,%s,%s\n",
+                timestamp, username, message);
+        writer.write(formattedMessage);
+
+        writer.close();
+    }
     // used when user edit conversations
     public void updateConversationFile(String filename, List<String> newMessages) throws IOException {
 
@@ -125,10 +139,10 @@ public class CSVWriter {
             BufferedWriter bfw = new BufferedWriter(new FileWriter(sellerFile));
             String header = String.format("%s,%s,%s,%s,%s,%s",
                     "username", "password", "conversation", "blocklist", "invislist", "stores");
-            bfw.write(header);
+            bfw.write(header + "\n");
             for (String line : allLines) {
                 bfw.write(line + "\n");
-                bfw.newLine();
+                bfw.flush();
             }
             bfw.close();
         }
@@ -383,7 +397,7 @@ public class CSVWriter {
     public void writeLatestLogOutTime(Timestamp timestamp, User user) throws IOException {
         String tsp = timestamp.toString();
         if (user instanceof Customer) {
-            String filename = "./src/" + "customers" + ".csv";
+            String filename = "" + "customers" + ".csv";
             BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
             List<String> allLines = csvReader.readAllLines(filename);
 
@@ -411,7 +425,7 @@ public class CSVWriter {
             }
 
         } else if (user instanceof Seller) {
-            String filename = "./src/" + "sellers" + ".csv";
+            String filename = "" + "sellers" + ".csv";
             BufferedWriter bfw = new BufferedWriter(new FileWriter(filename));
             List<String> allLines = csvReader.readAllLines(filename);
 
