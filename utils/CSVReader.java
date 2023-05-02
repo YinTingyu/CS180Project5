@@ -238,13 +238,14 @@ public class CSVReader {
 
 
     public List<Store> getSellerStores(Seller seller) throws IOException {
-        readStores();
+
+        storeMap = readStores();
         List<Store> sellerStore = new ArrayList<>();
         Store storeToFind;
         String line;
         BufferedReader bfr = new BufferedReader(new FileReader("./src/sellers.csv"));
         bfr.readLine(); // escape the header
-        while ((line = bfr.readLine()) != null && !line.equals("")) {
+        while ((line = bfr.readLine()) != null) {
             String[] attr = line.split(",");
             String sellerName = attr[0];
             if (sellerName.equals(seller.getUsername())) { // find the seller
