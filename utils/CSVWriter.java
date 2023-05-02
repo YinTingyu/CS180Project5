@@ -130,6 +130,9 @@ public class CSVWriter {
                     // only update this line
                     parts[3] = blockListStr; // the forth element of this line is block list
                     // reset this line in allLine list
+                    if(blockListStr.equals("")) {
+                        parts[3] = "...";
+                    }
                     String newline = String.join(",", parts);
                     allLines.set(i, newline);
                     break;
@@ -213,8 +216,10 @@ public class CSVWriter {
 
     public void writeStores(List<String> storesList) throws IOException {
 
+        System.out.println("writing stores");
         List<String> allLines = csvReader.readAllLines(sellerFile);
         BufferedWriter bfw = new BufferedWriter(new FileWriter(sellerFile));
+        //list of stores to be added delimited by ;
         String storesStr = String.join(";", storesList);
 
         for (int i = 0; i < allLines.size(); i++) {
@@ -234,6 +239,39 @@ public class CSVWriter {
             bfw.write(line);
             bfw.newLine();
         }
+        bfw.close();
+
+        //write new stores
+        allLines = csvReader.readAllLines(storeFile);
+        bfw = new BufferedWriter(new FileWriter(storeFile));
+        for (int i = 0; i < storesList.size(); i++) {
+            boolean isNew = false;
+
+            for(int j = 0; j < allLines.size(); j++) {
+                String[] attr = allLines.get(j).split(",");
+                if (attr[0].equals(storesList.get(i))) {
+                    isNew = false;
+                    break;
+                }
+                isNew = true;
+            }
+
+            if (isNew) {
+                allLines.add(storesList.get(i) + ",," + user.getUsername());
+                break;
+            }
+
+        }
+
+        header = String.format("%s,%s,%s",
+        "storeName","product-amount-price","sellerName");
+        bfw.write(header + "\n");
+
+        for (String line : allLines) {
+            bfw.write(line);
+            bfw.newLine();
+        }
+
         bfw.close();
     }
 
@@ -341,6 +379,9 @@ public class CSVWriter {
                 String newProductInfo = String.format("%s-%s-%s", name, amount, price);
                 productList.add(newProductInfo);
                 String allProducts = String.join(";", productList);
+                if(allProducts.substring(0, 1).equals(";")) {
+                    allProducts = allProducts.substring(1, allProducts.length());
+                }
                 attr[1] = allProducts;
                 String newline = String.join(",", attr);
                 allLines.set(i, newline);

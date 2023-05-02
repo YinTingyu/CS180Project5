@@ -16,6 +16,26 @@ public class CSVReader {
     public static Map<String, Seller> sellerMap = new HashMap<>();
     public static Map<User, ConversationHistory> historyMap = new HashMap<>();
 
+    public static void main(String args[])
+    {
+        try{
+
+            BufferedReader bfr = new BufferedReader(new FileReader("Greene&&Tim.csv"));
+            String str = bfr.readLine();
+            while(str!=null)
+            {
+                str = bfr.readLine();
+            }
+            List<String> tempMessages = readMessages("Greene&&Tim.csv");
+            for(String e: tempMessages)
+                System.out.println(e);
+        }catch(IOException e)
+        {
+
+        }
+
+    }
+
     public String getFilenames(String user, String other) {
         String csvFilename = "" + user + "&&" + other + ".csv"; // add "" just for running it, this is my path in Intellij
         return csvFilename;                                         //  you can change the path
@@ -269,13 +289,14 @@ public class CSVReader {
     }
 
 
-    public List<String> readMessages(String filename) throws IOException {
+    public static List<String> readMessages(String filename) throws IOException {
         List<String> messageList = new ArrayList<>();
         BufferedReader bfr = new BufferedReader(new FileReader(filename));
         String line;
         bfr.readLine(); // escape the header
 
         while ((line = bfr.readLine()) != null && !line.equals("")) {
+            System.out.println(line); //debug line
             String[] attr = line.split(",");
             String timestampStr = attr[0];
             String username = attr[1];

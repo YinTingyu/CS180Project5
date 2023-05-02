@@ -28,6 +28,14 @@ public class DataManager {
         }
     }
 
+    public List<String> getFileContents(String filename) {
+        try {
+            return csvReader.readAllLines(filename);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public void loadDataFromCSV() throws IOException {
 
         Map<String, Customer> customerMap = csvReader.readCustomers();
