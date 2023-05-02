@@ -51,12 +51,12 @@ public class Server{
             ServerSocket serverSocket = new ServerSocket(5555);
             while(true)
             {
-                System.out.println("Waiting for client...");
-    
-                Socket socket = serverSocket.accept();
-                System.out.println("Client connected!");
+                System.out.println("Ready for another client");
+                Socket clientSocket = serverSocket.accept();
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
 
-                ServerThread temp = new ServerThread(serverSocket, socket, dataManager);
+                ServerThread temp = new ServerThread(serverSocket, clientSocket, dataManager, in, out);
                 serverThreads.add(temp);
                 temp.start();
             }
@@ -64,7 +64,6 @@ public class Server{
         {
             e.printStackTrace();
         }
-
 
     }
 
