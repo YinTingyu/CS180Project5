@@ -13,6 +13,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.Socket;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,15 +30,17 @@ public class CustomerSMGWindow {
     private CustomerMenu customerMenu;
     private Store store;
     private Customer customer;
+    private Socket socket;
     static JTextField inputMessage;
 
     List<String> messages = new ArrayList<>();
 
     private JPanel conversationPanel = new JPanel();
-    public CustomerSMGWindow(CustomerMenu customerMenu, Store store, Customer customer) {
+    public CustomerSMGWindow(CustomerMenu customerMenu, Store store, Customer customer, Socket socket) {
         this.customerMenu = customerMenu;
         this.store = store;
         this.customer = customer;
+        this.socket = socket;
     }
 
     private void updateConversation(List<String> messages) throws IOException {
@@ -77,7 +80,6 @@ public class CustomerSMGWindow {
             JButton editButton = new JButton("Edit");
             JButton deleteButton = new JButton("Delete");
             JButton saveButton = new JButton("Save");
-            JButton importButton = new JButton("Import txt"); //file import stuff
             saveButton.setVisible(false);
 
             buttonPanel.add(editButton);
@@ -246,8 +248,16 @@ public class CustomerSMGWindow {
 
         JPanel sendButtonPanel = new JPanel(new FlowLayout());
         JButton sendButton = new JButton("Send");
+        JButton importButton = new JButton("Import txt"); //file import stuff
+        sendButtonPanel.add(importButton);
         sendButtonPanel.add(sendButton);
         inputPanel.add(sendButtonPanel, BorderLayout.EAST);
+        importButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                        FileImportGUI fio = new FileImportGUI(customer, socket);
+                    }
+        });
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
